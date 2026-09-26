@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "batman"
+version = "2.0.0"
+description = "Behavioral AI Threat Monitoring and Mitigation for ML Models — a model-agnostic runtime inference security gateway."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "BATMAN" }]
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "numpy>=1.26",
+    "scikit-learn>=1.4",
+    "joblib>=1.3",
+    "httpx>=0.27",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+llm = [
+    "groq>=0.9",
+    "boto3>=1.34",
+]
+rag = [
+    "chromadb>=0.5",
+]
+embeddings = [
+    "sentence-transformers>=2.7",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+all = [
+    "groq>=0.9",
+    "boto3>=1.34",
+    "chromadb>=0.5",
+    "sentence-transformers>=2.7",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+
+[tool.setuptools.packages.find]
+include = ["batman*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

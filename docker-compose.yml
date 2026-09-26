@@ -1,0 +1,24 @@
+services:
+  gateway:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - batman_data:/data
+    environment:
+      - BATMAN_MODE=enforce
+      - BATMAN_LLM_PROVIDER=${BATMAN_LLM_PROVIDER:-stub}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.1-8b-instant}
+      - BATMAN_EMBEDDINGS_BACKEND=${BATMAN_EMBEDDINGS_BACKEND:-hashing}
+      - BATMAN_VECTOR_STORE=${BATMAN_VECTOR_STORE:-memory}
+
+  dashboard:
+    build: ./dashboard
+    ports:
+      - "4173:4173"
+    depends_on:
+      - gateway
+
+volumes:
+  batman_data:

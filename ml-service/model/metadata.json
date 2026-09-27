@@ -1,0 +1,58 @@
+{
+  "model_type": "sklearn Pipeline(StandardScaler + LogisticRegression)",
+  "dataset": "Breast Cancer Wisconsin (Diagnostic)",
+  "dataset_source": "UCI ML Repository / sklearn.datasets.load_breast_cancer",
+  "n_features": 30,
+  "feature_names": [
+    "mean radius",
+    "mean texture",
+    "mean perimeter",
+    "mean area",
+    "mean smoothness",
+    "mean compactness",
+    "mean concavity",
+    "mean concave points",
+    "mean symmetry",
+    "mean fractal dimension",
+    "radius error",
+    "texture error",
+    "perimeter error",
+    "area error",
+    "smoothness error",
+    "compactness error",
+    "concavity error",
+    "concave points error",
+    "symmetry error",
+    "fractal dimension error",
+    "worst radius",
+    "worst texture",
+    "worst perimeter",
+    "worst area",
+    "worst smoothness",
+    "worst compactness",
+    "worst concavity",
+    "worst concave points",
+    "worst symmetry",
+    "worst fractal dimension"
+  ],
+  "target_names": [
+    "malignant",
+    "benign"
+  ],
+  "split": {
+    "train": 341,
+    "val": 114,
+    "test": 114
+  },
+  "seed": 42,
+  "validation_f1": 0.993,
+  "test_metrics": {
+    "accuracy": 0.9912,
+    "precision": 0.9861,
+    "recall": 1.0,
+    "f1": 0.993,
+    "roc_auc": 0.9971
+  },
+  "trained_at": "2026-09-26T15:01:24.004420+00:00",
+  "classification_report": "              precision    recall  f1-score   support\n\n   malignant       1.00      0.98      0.99        43\n      benign       0.99      1.00      0.99        71\n\n    accuracy                           0.99       114\n   macro avg       0.99      0.99      0.99       114\nweighted avg       0.99      0.99      0.99       114\n"
+}

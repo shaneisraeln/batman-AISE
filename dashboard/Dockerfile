@@ -1,6 +1,9 @@
 # BATMAN dashboard container (build + static serve via vite preview).
 FROM node:20-alpine AS build
 WORKDIR /app
+# VITE_BASE lets the SPA be served under a sub-path (e.g. /app/) behind a proxy.
+ARG VITE_BASE=/
+ENV VITE_BASE=${VITE_BASE}
 COPY package.json ./
 RUN npm install --no-audit --no-fund
 COPY . .

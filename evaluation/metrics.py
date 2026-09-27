@@ -38,17 +38,41 @@ class Metrics:
         return self.fp / d if d else 0.0
 
     @property
+    def tpr(self) -> float:
+        # True-positive rate is identical to recall; exposed explicitly so
+        # reports can list TPR/FPR as a pair.
+        return self.recall
+
+    @property
+    def tnr(self) -> float:
+        d = self.tn + self.fp
+        return self.tn / d if d else 0.0
+
+    @property
     def accuracy(self) -> float:
+        # Classification accuracy. NOTE: this is NOT F1. Kept distinct on purpose.
         total = self.tp + self.fp + self.tn + self.fn
         return (self.tp + self.tn) / total if total else 0.0
+
+    def confusion_matrix(self) -> dict:
+        """2x2 confusion matrix with explicit cell names (suspicious = positive)."""
+        return {
+            "true_positive": self.tp,
+            "false_negative": self.fn,
+            "false_positive": self.fp,
+            "true_negative": self.tn,
+        }
 
     def to_dict(self) -> dict:
         return {
             "precision": round(self.precision, 4),
             "recall": round(self.recall, 4),
             "f1": round(self.f1, 4),
+            "true_positive_rate": round(self.tpr, 4),
             "false_positive_rate": round(self.fpr, 4),
-            "accuracy": round(self.accuracy, 4),
+            "true_negative_rate": round(self.tnr, 4),
+            "classification_accuracy": round(self.accuracy, 4),
+            "confusion_matrix": self.confusion_matrix(),
             "tp": self.tp,
             "fp": self.fp,
             "tn": self.tn,

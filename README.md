@@ -36,6 +36,71 @@ The **policy engine is authoritative**. Deterministic rules and rate limiting fo
 
 ---
 
+## Phase 1 — validated against a REAL ML service
+
+BATMAN has been validated end-to-end protecting a **real, separately deployed ML
+inference service** (`ml-service/`, a Breast Cancer Wisconsin classifier), not
+just synthetic traffic. BATMAN sits in front of it as an HTTP gateway/proxy.
+
+```
+Client → BATMAN gateway (:8000) → HTTPModelAdapter → ML service (:9000) → real model
+```
+
+Run the real stack with one command, then reproduce the experiments:
+
+```powershell
+.\scripts\run_stack.ps1                     # ML service :9000 + BATMAN :8000
+python -m experiments.verify_integration    # proves blocked reqs never reach the model
+python -m experiments.normal_client --requests 60
+python -m experiments.attack_client
+python -m evaluation.real_eval
+python -m experiments.verify_telemetry      # proves 100% telemetry traceability
+```
+
+Or the full containerized stack: `docker compose up --build`.
+
+**Validated results (all measured, real path):** protected model test F1 0.993 ·
+legit false-positive rate 1.5% · blocked requests provably never reach the model ·
+detector-scope F1 0.894 · generalization to an unseen extraction strategy F1 0.939 ·
+detector latency p95 23.8 ms · 100% telemetry traceability · 55 tests passing.
+
+Full evidence: [`docs/PHASE1_VALIDATION.md`](docs/PHASE1_VALIDATION.md) and the
+per-step reports in `docs/`.
+
+---
+
+## Cloud & SDK (Phase 2 / 3) — self-serve, multi-tenant
+
+Beyond the single-process Phase 1 gateway, BATMAN has a **hosted, multi-tenant
+control plane** (`batman/cloud/`) so a developer can self-serve end to end:
+
+> Landing → sign up → log in → create project → register model → generate API
+> key → integrate → protect an existing ML API → see security telemetry →
+> label detections → revoke → log out.
+
+- **Data + control plane:** `batman.cloud.app` (FastAPI) — Bearer-token control
+  plane, `x-api-key` data plane, PostgreSQL (or SQLite for dev). It reuses the
+  **same** frozen Phase 1 detection engine.
+- **Lightweight SDK:** `pip install batman-ml` (import `batman_ml`) — an
+  httpx-only client; `protect(api_key=..., base_url=...)` /
+  `BatmanClient`. The package is built and `twine`-checked; publishing to PyPI
+  is the owner's step (see `PHASE3_SDK_PYPI.md`).
+- **One-command stack:** `docker compose -f docker-compose.cloud.yml up --build`
+  (Postgres + cloud API + dashboard + landing + Caddy with automatic HTTPS).
+  Full runbook: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+
+Phase 3 hardening + evidence:
+[`SECURITY_AUDIT_PHASE3.md`](SECURITY_AUDIT_PHASE3.md) (auth, tenant isolation,
+CORS, upstream-credential encryption, **SSRF guard**, input bounds, rate
+limiting, dependency audit) ·
+[`PUBLIC_E2E_VALIDATION.md`](PUBLIC_E2E_VALIDATION.md) (full funnel against the
+real ML service) · [`PHASE3_PUBLIC_READINESS.md`](PHASE3_PUBLIC_READINESS.md)
+(honest readiness report). Public deployment to a real domain and the PyPI
+publish are the only remaining steps and require the owner's infrastructure /
+credentials.
+
+---
+
 ## Quick start
 
 ### 1. Install (Python 3.11)

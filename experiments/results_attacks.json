@@ -1,0 +1,73 @@
+{
+  "note": "CONTROLLED SECURITY TEST \u2014 intentionally generated attack traffic against our own service. Not production traffic.",
+  "experiments": [
+    {
+      "experiment": "A_api_abuse",
+      "description": "high-rate repeated requests (no pacing)",
+      "requests_sent": 80,
+      "allowed": 27,
+      "rate_limited": 53,
+      "blocked": 0,
+      "reached_model_total": 27,
+      "first_detection_index": 10,
+      "successful_predictions_before_detection": 10,
+      "mean_anomaly_score": 0.4043,
+      "mean_extraction_score": 0.0,
+      "sample_request_ids": [
+        "req_d527d46c708c47f0a8ef7b22cb0825b4",
+        "req_03ec68d36e624c9ab38457f9742162b2"
+      ]
+    },
+    {
+      "experiment": "B_systematic_probing",
+      "description": "ordered systematic input variation",
+      "requests_sent": 80,
+      "allowed": 10,
+      "rate_limited": 18,
+      "blocked": 52,
+      "reached_model_total": 10,
+      "first_detection_index": 10,
+      "successful_predictions_before_detection": 10,
+      "mean_anomaly_score": 0.8091,
+      "mean_extraction_score": 0.2513,
+      "sample_request_ids": [
+        "req_75096a6b25754d698b478e9770b0fd30",
+        "req_a8ab2f6977784256801a6598a0730b25"
+      ]
+    },
+    {
+      "experiment": "C_model_extraction",
+      "description": "high-diversity input-space sweep",
+      "requests_sent": 140,
+      "allowed": 11,
+      "rate_limited": 35,
+      "blocked": 94,
+      "reached_model_total": 11,
+      "first_detection_index": 5,
+      "successful_predictions_before_detection": 5,
+      "mean_anomaly_score": 0.796,
+      "mean_extraction_score": 0.4468,
+      "sample_request_ids": [
+        "req_a814094058cb4602aa7f6ab7176df126",
+        "req_ad8a17143afd4491b351b9652857b2a5"
+      ]
+    },
+    {
+      "experiment": "D_anomalous_inputs",
+      "description": "out-of-range / extreme-norm inputs",
+      "requests_sent": 60,
+      "allowed": 6,
+      "rate_limited": 11,
+      "blocked": 43,
+      "reached_model_total": 6,
+      "first_detection_index": 5,
+      "successful_predictions_before_detection": 5,
+      "mean_anomaly_score": 0.8684,
+      "mean_extraction_score": 0.2183,
+      "sample_request_ids": [
+        "req_88f1d5b5cbfe4fd38577f58fc1c3de25",
+        "req_a39596d6b9fb489e9fb51c4f1fb13389"
+      ]
+    }
+  ]
+}

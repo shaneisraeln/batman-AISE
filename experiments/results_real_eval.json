@@ -1,0 +1,222 @@
+{
+  "provenance": {
+    "attack_traffic": "SYNTHETIC / CONTROLLED (attacks/* generators)",
+    "feature_pipeline_and_detector": "REAL runtime components (batman.*), breast-cancer calibrated",
+    "note": "Offline replay of the real pipeline. Live-path telemetry from Steps 4-5 is reported separately in SQLite, not merged here."
+  },
+  "dataset": {
+    "distribution": "Breast Cancer Wisconsin feature space (30-dim)",
+    "n_events_main": 1842,
+    "class_counts": {
+      "NORMAL": 312,
+      "ABUSE": 840,
+      "EXTRACTION": 623,
+      "ANOMALY": 67
+    }
+  },
+  "ablation_all_classes_strategy_A": {
+    "A_rules_only": {
+      "precision": 1.0,
+      "recall": 0.0176,
+      "f1": 0.0347,
+      "true_positive_rate": 0.0176,
+      "false_positive_rate": 0.0,
+      "true_negative_rate": 1.0,
+      "classification_accuracy": 0.184,
+      "confusion_matrix": {
+        "true_positive": 27,
+        "false_negative": 1503,
+        "false_positive": 0,
+        "true_negative": 312
+      },
+      "tp": 27,
+      "fp": 0,
+      "tn": 312,
+      "fn": 1503
+    },
+    "B_isolation_forest_only": {
+      "precision": 0.9746,
+      "recall": 0.4765,
+      "f1": 0.64,
+      "true_positive_rate": 0.4765,
+      "false_positive_rate": 0.0609,
+      "true_negative_rate": 0.9391,
+      "classification_accuracy": 0.5548,
+      "confusion_matrix": {
+        "true_positive": 729,
+        "false_negative": 801,
+        "false_positive": 19,
+        "true_negative": 293
+      },
+      "tp": 729,
+      "fp": 19,
+      "tn": 293,
+      "fn": 801
+    },
+    "C_if_plus_extraction": {
+      "precision": 0.9749,
+      "recall": 0.483,
+      "f1": 0.646,
+      "true_positive_rate": 0.483,
+      "false_positive_rate": 0.0609,
+      "true_negative_rate": 0.9391,
+      "classification_accuracy": 0.5603,
+      "confusion_matrix": {
+        "true_positive": 739,
+        "false_negative": 791,
+        "false_positive": 19,
+        "true_negative": 293
+      },
+      "tp": 739,
+      "fp": 19,
+      "tn": 293,
+      "fn": 791
+    },
+    "D_full_batman_hybrid": {
+      "precision": 0.9758,
+      "recall": 0.5,
+      "f1": 0.6612,
+      "true_positive_rate": 0.5,
+      "false_positive_rate": 0.0609,
+      "true_negative_rate": 0.9391,
+      "classification_accuracy": 0.5744,
+      "confusion_matrix": {
+        "true_positive": 765,
+        "false_negative": 765,
+        "false_positive": 19,
+        "true_negative": 293
+      },
+      "tp": 765,
+      "fp": 19,
+      "tn": 293,
+      "fn": 765
+    }
+  },
+  "ablation_detector_scope_strategy_A": {
+    "scope_note": "Excludes ABUSE, which is a rate/frequency attack owned by the deterministic rate limiter (see Step 5 live results), not the content-based behavioral detector. This isolates the detector's own responsibility: EXTRACTION + ANOMALY vs NORMAL.",
+    "A_rules_only": {
+      "precision": 1.0,
+      "recall": 0.0391,
+      "f1": 0.0753,
+      "true_positive_rate": 0.0391,
+      "false_positive_rate": 0.0,
+      "true_negative_rate": 1.0,
+      "classification_accuracy": 0.3383,
+      "confusion_matrix": {
+        "true_positive": 27,
+        "false_negative": 663,
+        "false_positive": 0,
+        "true_negative": 312
+      },
+      "tp": 27,
+      "fp": 0,
+      "tn": 312,
+      "fn": 663
+    },
+    "B_isolation_forest_only": {
+      "precision": 0.9658,
+      "recall": 0.7783,
+      "f1": 0.862,
+      "true_positive_rate": 0.7783,
+      "false_positive_rate": 0.0609,
+      "true_negative_rate": 0.9391,
+      "classification_accuracy": 0.8283,
+      "confusion_matrix": {
+        "true_positive": 537,
+        "false_negative": 153,
+        "false_positive": 19,
+        "true_negative": 293
+      },
+      "tp": 537,
+      "fp": 19,
+      "tn": 293,
+      "fn": 153
+    },
+    "C_if_plus_extraction": {
+      "precision": 0.9664,
+      "recall": 0.7928,
+      "f1": 0.871,
+      "true_positive_rate": 0.7928,
+      "false_positive_rate": 0.0609,
+      "true_negative_rate": 0.9391,
+      "classification_accuracy": 0.8383,
+      "confusion_matrix": {
+        "true_positive": 547,
+        "false_negative": 143,
+        "false_positive": 19,
+        "true_negative": 293
+      },
+      "tp": 547,
+      "fp": 19,
+      "tn": 293,
+      "fn": 143
+    },
+    "D_full_batman_hybrid": {
+      "precision": 0.9679,
+      "recall": 0.8304,
+      "f1": 0.8939,
+      "true_positive_rate": 0.8304,
+      "false_positive_rate": 0.0609,
+      "true_negative_rate": 0.9391,
+      "classification_accuracy": 0.8643,
+      "confusion_matrix": {
+        "true_positive": 573,
+        "false_negative": 117,
+        "false_positive": 19,
+        "true_negative": 293
+      },
+      "tp": 573,
+      "fp": 19,
+      "tn": 293,
+      "fn": 117
+    }
+  },
+  "per_class_recall_full_hybrid": {
+    "ABUSE": {
+      "total": 840,
+      "detected": 192,
+      "recall": 0.2286
+    },
+    "EXTRACTION": {
+      "total": 623,
+      "detected": 522,
+      "recall": 0.8379
+    },
+    "ANOMALY": {
+      "total": 67,
+      "detected": 51,
+      "recall": 0.7612
+    }
+  },
+  "latency": {
+    "samples": 1842,
+    "p50_ms": 19.2673,
+    "p95_ms": 24.6249,
+    "p99_ms": 32.2172,
+    "mean_ms": 19.7471,
+    "max_ms": 65.4134
+  },
+  "generalization_A_to_B": {
+    "calibrated_on": "NORMAL behavior only (unsupervised); main eval used extraction A",
+    "tested_on": "NORMAL + extraction strategy B (unseen)",
+    "metrics": {
+      "precision": 0.9919,
+      "recall": 0.8913,
+      "f1": 0.9389,
+      "true_positive_rate": 0.8913,
+      "false_positive_rate": 0.0255,
+      "true_negative_rate": 0.9745,
+      "classification_accuracy": 0.9097,
+      "confusion_matrix": {
+        "true_positive": 615,
+        "false_negative": 75,
+        "false_positive": 5,
+        "true_negative": 191
+      },
+      "tp": 615,
+      "fp": 5,
+      "tn": 191,
+      "fn": 75
+    }
+  }
+}

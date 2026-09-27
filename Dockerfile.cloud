@@ -1,0 +1,28 @@
+# BATMAN Cloud API (Phase 2) — control plane + data plane.
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+WORKDIR /app
+
+# Install the server package with cloud extras (cryptography + psycopg).
+COPY pyproject.toml README.md ./
+COPY batman ./batman
+RUN pip install --upgrade pip && pip install -e ".[cloud]"
+
+# Supporting modules needed to build the calibrated detector at image time.
+COPY attacks ./attacks
+COPY training ./training
+COPY evaluation ./evaluation
+
+# Build the reference pools + the breast-cancer-calibrated detector so the
+# image is self-contained. prepare builds BOTH digits + breast_cancer pools.
+RUN python -m training.prepare \
+    && python -m training.train \
+    && python -m training.train --dataset breast_cancer
+
+EXPOSE 8100
+
+# Config is provided via environment (see docker-compose.cloud.yml / .env):
+#   BATMAN_DATABASE_URL, BATMAN_SECRET_KEY, BATMAN_ENCRYPTION_KEY,
+#   BATMAN_DETECTOR_PATH, BATMAN_LLM_PROVIDER
+CMD ["uvicorn", "batman.cloud.app:app", "--host", "0.0.0.0", "--port", "8100"]

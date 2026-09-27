@@ -47,10 +47,19 @@ class CreateKeyRequest(BaseModel):
 
 
 def create_app(model: object | None = None, enable_llm: bool = True) -> FastAPI:
+    import os
+
     settings = get_settings()
     store = TelemetryStore(settings.db_path)
+    # Allow the detector artifact to be selected per protected service, so the
+    # behavioral detector is calibrated for the distribution it actually guards.
+    detector_path = os.getenv("BATMAN_DETECTOR_PATH", "models/isolation_forest.joblib")
     engine = SecurityEngine(
-        model=model, settings=settings, store=store, enable_llm=enable_llm
+        model=model,
+        settings=settings,
+        store=store,
+        enable_llm=enable_llm,
+        detector_path=detector_path,
     )
     key_store = APIKeyStore(store)
 
@@ -188,11 +197,22 @@ def _jsonable(x):
     return x
 
 
-# Default app instance loads the demo model if present.
+# Default app instance selects a protected model in this priority:
+#   1. BATMAN_PROTECTED_MODEL_URL set -> proxy to a real external ML API (Phase 1).
+#   2. otherwise -> load the local demo joblib model in-process (legacy behavior).
 def _default_model():
+    import os
+
+    url = os.getenv("BATMAN_PROTECTED_MODEL_URL")
+    if url:
+        from batman.adapters_http import HTTPModelAdapter
+
+        return HTTPModelAdapter(
+            base_url=url,
+            predict_path=os.getenv("BATMAN_PROTECTED_MODEL_PATH", "/predict"),
+        )
     try:
         import joblib
-        import os
 
         path = os.path.join("models", "demo_model.joblib")
         if os.path.exists(path):

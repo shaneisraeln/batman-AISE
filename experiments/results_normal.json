@@ -1,0 +1,30 @@
+{
+  "requests_sent": 200,
+  "successful_predictions": 197,
+  "prediction_accuracy_vs_ground_truth": 0.9492,
+  "false_positives": 3,
+  "false_positive_rate": 0.015,
+  "action_distribution": {
+    "LOG": 23,
+    "ALLOW": 174,
+    "RATE_LIMIT": 3
+  },
+  "latency_via_batman_ms": {
+    "p50": 30.859,
+    "p95": 41.008,
+    "p99": 59.175,
+    "mean": 32.271
+  },
+  "latency_direct_ml_ms": {
+    "p50": 4.185,
+    "mean": 4.304
+  },
+  "batman_overhead_ms_mean": 27.967,
+  "anomaly_score_mean": 0.207,
+  "extraction_score_mean": 0.0,
+  "sample_request_ids": [
+    "req_3107b7b9ff554687b0142b3d5a8d3906",
+    "req_0c86633f3f894dfdbd525d630d2f0c07",
+    "req_24a4d2b4d25f4242b8d73a7e12c7b52f"
+  ]
+}

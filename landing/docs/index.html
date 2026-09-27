@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BATMAN — Documentation</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 58'%3E%3Crect width='100' height='58' fill='%23000'/%3E%3Cpath fill='%23f2c14e' d='M50 8c2 6 6 9 11 9 3 0 5-1 7-3-1 5-1 9 1 13 4-5 9-7 15-7 5 0 9 2 12 5-6-1-10 1-12 6-2 4-2 8 0 14-5-4-10-5-15-3-4 2-6 5-7 9-1-4-3-7-7-8h-2c-4 1-6 4-7 8-1-4-3-7-7-9-5-2-10-1-15 3 2-6 2-10 0-14-2-5-6-7-12-6 3-3 7-5 12-5 6 0 11 2 15 7 2-4 2-8 1-13 2 2 4 3 7 3 5 0 9-3 11-9z'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./docs.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <svg viewBox="0 0 100 58" class="bat" aria-hidden="true"><path fill="#f2c14e" d="M50 8c2 6 6 9 11 9 3 0 5-1 7-3-1 5-1 9 1 13 4-5 9-7 15-7 5 0 9 2 12 5-6-1-10 1-12 6-2 4-2 8 0 14-5-4-10-5-15-3-4 2-6 5-7 9-1-4-3-7-7-8h-2c-4 1-6 4-7 8-1-4-3-7-7-9-5-2-10-1-15 3 2-6 2-10 0-14-2-5-6-7-12-6 3-3 7-5 12-5 6 0 11 2 15 7 2-4 2-8 1-13 2 2 4 3 7 3 5 0 9-3 11-9z"/></svg>
+      <span class="name">BATMAN</span>
+      <span class="crumb">/ docs</span>
+      <span class="spacer"></span>
+      <a class="home" href="../index.html">← Home</a>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="grp">Get started</div>
+        <a href="#intro">Introduction</a>
+        <a href="#quickstart">Quickstart</a>
+        <div class="grp">Integration</div>
+        <a href="#sdk">Python SDK</a>
+        <a href="#api">API integration</a>
+        <a href="#existing">Existing ML API</a>
+        <div class="grp">Manage</div>
+        <a href="#projects">Projects</a>
+        <a href="#keys">API keys</a>
+        <div class="grp">Security engine</div>
+        <a href="#detection">Threat detection</a>
+        <a href="#policies">Policies</a>
+        <a href="#telemetry">Telemetry</a>
+        <a href="#dashboard">Dashboard</a>
+        <div class="grp">Operating</div>
+        <a href="#security">Security</a>
+        <a href="#data">Data handling</a>
+        <a href="#limits">Limitations</a>
+        <a href="#troubleshooting">Troubleshooting</a>
+      </aside>
+
+      <main class="content">
+        <section id="intro">
+          <h1>BATMAN Documentation</h1>
+          <div class="sub">Runtime security for machine-learning inference APIs.</div>
+          <p>
+            BATMAN is a model-agnostic security layer that sits in front of an ML
+            model. It analyzes behavior <em>across</em> inference requests,
+            detects suspicious patterns (API abuse, anomalous inputs, systematic
+            model probing / extraction), and enforces an action with a
+            deterministic policy engine: <code>ALLOW</code>, <code>LOG</code>,
+            <code>RATE_LIMIT</code>, <code>BLOCK</code>, or <code>ESCALATE</code>.
+          </p>
+          <p>You integrate in one of two ways:</p>
+          <ul>
+            <li><strong>Python SDK</strong> — a lightweight client (<code>batman-ml</code>) that routes inference through BATMAN.</li>
+            <li><strong>REST / gateway</strong> — register your existing model endpoint and let BATMAN proxy to it.</li>
+          </ul>
+          <div class="note">
+            The policy engine is authoritative. The LLM investigation layer
+            explains and recommends, but never overrides an enforcement decision.
+          </div>
+        </section>
+
+        <section id="quickstart">
+          <h2>Quickstart</h2>
+          <p>From zero to a protected model in five steps.</p>
+          <h3>1. Create an account &amp; get a token</h3>
+          <pre><code>curl -X POST $BATMAN/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"your-strong-password"}'
+# -> {"token":"...", "token_type":"bearer"}</code></pre>
+          <h3>2. Create a project</h3>
+          <pre><code>curl -X POST $BATMAN/projects \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"name":"Fraud","environment":"production"}'</code></pre>
+          <h3>3. Register a model</h3>
+          <pre><code>curl -X POST $BATMAN/models \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"project_id":"proj_...","name":"fraud-v1"}'</code></pre>
+          <h3>4. Point it at your model, then generate a key</h3>
+          <pre><code>curl -X PUT $BATMAN/models/model_.../upstream \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"url":"https://your-api.example/predict"}'
+
+curl -X POST $BATMAN/keys \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"project_id":"proj_...","model_id":"model_...","name":"prod"}'
+# -> {"api_key":"bm_live_xxxxx", ...}   (shown once)</code></pre>
+          <h3>5. Send inference through BATMAN</h3>
+          <pre><code>pip install batman-ml</code></pre>
+          <pre><code>from batman_ml import protect
+
+protected = protect(api_key="bm_live_xxxxx", base_url="$BATMAN")
+prediction = protected.predict(X)</code></pre>
+        </section>
+
+        <section id="sdk">
+          <h2>Python SDK</h2>
+          <p>
+            <code>batman-ml</code> is a thin HTTP client (its only dependency is
+            <code>httpx</code>). It does not run the detector locally — detection
+            happens server-side.
+          </p>
+          <h3>protect()</h3>
+          <pre><code>from batman_ml import protect
+
+protected = protect(
+    api_key="bm_live_xxxxx",        # or set BATMAN_API_KEY
+    base_url="https://your-batman", # or set BATMAN_BASE_URL
+    raise_on_block=False,           # True -> BlockedError instead of a result
+)
+prediction = protected.predict(X)          # your model's output
+result = protected.predict_secure(X)       # full decision + prediction</code></pre>
+          <h3>BatmanClient</h3>
+          <pre><code>from batman_ml import BatmanClient
+
+client = BatmanClient(api_key="bm_live_xxxxx", base_url="https://your-batman")
+r = client.predict(X)
+print(r.action, r.threat_type, r.prediction, r.request_id)
+# analyze without returning a prediction:
+client.analyze(X)</code></pre>
+          <h3>Exceptions</h3>
+          <p>All derive from <code>BatmanError</code>:</p>
+          <table>
+            <tr><th>Exception</th><th>When</th></tr>
+            <tr><td class="m">AuthenticationError</td><td>missing / invalid / revoked key (401)</td></tr>
+            <tr><td class="m">AuthorizationError</td><td>not permitted for the resource (403)</td></tr>
+            <tr><td class="m">BlockedError</td><td>blocked by policy (carries <code>.decision</code>)</td></tr>
+            <tr><td class="m">RateLimitedError</td><td>throttled (carries <code>.retry_after</code>)</td></tr>
+            <tr><td class="m">ValidationError</td><td>bad payload (400/422)</td></tr>
+            <tr><td class="m">UpstreamError</td><td>your protected model failed (502/504)</td></tr>
+            <tr><td class="m">ConnectionError / TimeoutError</td><td>could not reach BATMAN</td></tr>
+          </table>
+          <div class="note">The API key is sent only in the <code>x-api-key</code> header and is never logged, printed, or included in exceptions.</div>
+        </section>
+
+        <section id="api">
+          <h2>API integration (REST)</h2>
+          <p>Prefer to call BATMAN directly? The data plane is one endpoint.</p>
+          <pre><code>curl -X POST $BATMAN/v1/predict \
+  -H "x-api-key: bm_live_xxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"inputs": [[/* feature vector */]], "session_id": "client-42"}'</code></pre>
+          <p>Response:</p>
+          <pre><code>{
+  "action": "LOG",
+  "threat_type": "NONE",
+  "threat_level": "LOW",
+  "prediction": [0],
+  "request_id": "req_...",
+  "latency_ms": 12.3
+}</code></pre>
+          <table>
+            <tr><th>Field</th><th>Meaning</th></tr>
+            <tr><td class="m">action</td><td>ALLOW · LOG · RATE_LIMIT · BLOCK · ESCALATE</td></tr>
+            <tr><td class="m">threat_type</td><td>NONE · API_ABUSE · MODEL_EXTRACTION · ANOMALOUS_INPUT · INVALID_REQUEST</td></tr>
+            <tr><td class="m">prediction</td><td>your model's output (present when allowed)</td></tr>
+            <tr><td class="m">request_id</td><td>traceable in the dashboard</td></tr>
+          </table>
+          <p>A <code>BLOCK</code> in enforce mode returns HTTP <code>403</code>; a rate-limited request returns <code>200</code> with a <code>note</code> or HTTP <code>429</code>. Provide a stable <code>session_id</code> per client so behavioral analysis works across requests.</p>
+        </section>
+
+        <section id="existing">
+          <h2>Protecting an existing ML API</h2>
+          <p>
+            BATMAN can protect a model you have already deployed — no retraining,
+            no model change. Configure the upstream once per model:
+          </p>
+          <pre><code>PUT /models/{model_id}/upstream
+{
+  "url": "https://your-api.example/predict",
+  "method": "POST",
+  "predict_path": "/predict",
+  "request_format": "instances",     // "instances" | "raw"
+  "response_format": "predictions",  // "predictions" | "raw"
+  "auth_type": "bearer",             // "none" | "bearer" | "header"
+  "auth_secret": "your-upstream-token",
+  "auth_header_name": "X-API-Key",   // when auth_type = "header"
+  "timeout_s": 15.0
+}</code></pre>
+          <p>Traffic then flows: <code>Client → BATMAN → Security engine → your ML API → your model</code>.</p>
+          <div class="warn">
+            Upstream credentials are encrypted at rest (Fernet) and are never
+            returned by any endpoint or written to logs. BATMAN does not attempt
+            to understand arbitrary API schemas — declare the request/response
+            format explicitly.
+          </div>
+        </section>
+
+        <section id="projects">
+          <h2>Projects &amp; models</h2>
+          <p>The resource hierarchy is <code>User → Projects → Models → API Keys</code>. A project carries an environment label (<code>development</code>, <code>staging</code>, <code>production</code>) surfaced in the dashboard. Every resource is tenant-scoped: you can only see and act on your own.</p>
+          <table>
+            <tr><th>Endpoint</th><th>Purpose</th></tr>
+            <tr><td class="m">POST /projects</td><td>create a project</td></tr>
+            <tr><td class="m">GET /projects</td><td>list your projects</td></tr>
+            <tr><td class="m">POST /models</td><td>register a model under a project</td></tr>
+            <tr><td class="m">GET /models?project_id=</td><td>list models</td></tr>
+          </table>
+        </section>
+
+        <section id="keys">
+          <h2>API keys</h2>
+          <p>Keys are issued by BATMAN and prefixed <code>bm_live_</code>. They authenticate the data plane and bind a client to one project + model.</p>
+          <table>
+            <tr><th>Endpoint</th><th>Purpose</th></tr>
+            <tr><td class="m">POST /keys</td><td>create a key — the raw secret is returned <strong>once</strong></td></tr>
+            <tr><td class="m">GET /keys</td><td>list key metadata (never the secret)</td></tr>
+            <tr><td class="m">DELETE /keys/{key_id}</td><td>revoke a key</td></tr>
+          </table>
+          <div class="warn">
+            Copy a new key immediately — it is shown only at creation. Only a
+            salted hash is stored; the raw key cannot be recovered. If lost,
+            revoke it and create a new one.
+          </div>
+        </section>
+
+        <section id="detection">
+          <h2>Threat detection</h2>
+          <p>Detection combines three complementary signals:</p>
+          <ul>
+            <li><strong>Deterministic rules</strong> — malformed input, NaN/Inf, oversized payloads, hard rate-limit violations. Always active.</li>
+            <li><strong>Isolation Forest</strong> — an anomaly detector calibrated on your service's own normal traffic.</li>
+            <li><strong>Extraction detector</strong> — scores probing/extraction behavior from request rate, query diversity, and systematic input variation across a session.</li>
+          </ul>
+          <p>
+            Behavioral detection needs a few requests of session history before a
+            pattern is unambiguous, so the first requests of a new session are
+            not blocked on the anomaly signal alone (deterministic rules still
+            apply). This is intentional: BATMAN detects behavior <em>across</em>
+            requests.
+          </p>
+        </section>
+
+        <section id="policies">
+          <h2>Policies</h2>
+          <p>The policy engine maps threat evidence to an action. Higher severity → stronger action; deterministic high-severity rules take precedence over ML scores.</p>
+          <table>
+            <tr><th>Level</th><th>Action</th></tr>
+            <tr><td>LOW</td><td class="m">LOG</td></tr>
+            <tr><td>MEDIUM</td><td class="m">RATE_LIMIT</td></tr>
+            <tr><td>HIGH</td><td class="m">BLOCK</td></tr>
+            <tr><td>UNCERTAIN</td><td class="m">ESCALATE</td></tr>
+          </table>
+          <p>In <code>monitor</code> mode, blocking actions are downgraded to <code>LOG</code> so you can observe without enforcing. In <code>enforce</code> mode, policy is applied.</p>
+        </section>
+
+        <section id="telemetry">
+          <h2>Telemetry</h2>
+          <p>Every request produces a structured, request-id-traceable telemetry record: timestamp, project, model, session, anomaly &amp; extraction scores, threat type, action, latency, and reason. Read it via:</p>
+          <table>
+            <tr><th>Endpoint</th><th>Purpose</th></tr>
+            <tr><td class="m">GET /v1/metrics</td><td>tenant-scoped summary (totals, actions, threat categories, latency)</td></tr>
+            <tr><td class="m">GET /v1/threats</td><td>recent threats for your projects</td></tr>
+            <tr><td class="m">GET /v1/threats/{request_id}</td><td>full detail for one incident</td></tr>
+          </table>
+          <p>Analyst feedback (<code>POST /v1/feedback</code>) is stored separately from immutable telemetry and is used for future evaluation — never for automatic retraining.</p>
+        </section>
+
+        <section id="dashboard">
+          <h2>Dashboard</h2>
+          <p>The web console (auth-gated) shows only real data from your account: overview KPIs, a searchable threat log, per-incident forensic detail (evidence, scores, investigation, policy decision), plus project / model / key management. Environments are labelled <strong>DEV / STAGING / PROD</strong>, and controlled security tests are labelled <strong>CONTROLLED TEST</strong> — simulated traffic is never presented as production traffic.</p>
+        </section>
+
+        <section id="security">
+          <h2>Security considerations</h2>
+          <ul>
+            <li>API keys: cryptographically random, salted-hash storage, constant-time verification, revocable.</li>
+            <li>Passwords: PBKDF2-HMAC-SHA256 with per-password salt.</li>
+            <li>Tenant isolation: every read/write is scoped to the owning user; no cross-project access.</li>
+            <li>Upstream credentials: encrypted at rest (Fernet); never logged or returned.</li>
+            <li>Transport: use HTTPS in production. Rate limiting and request-size limits are enforced.</li>
+            <li>The LLM is advisory; the policy engine is authoritative.</li>
+          </ul>
+        </section>
+
+        <section id="data">
+          <h2>Data handling</h2>
+          <p>
+            BATMAN stores the minimum needed for security analysis: behavioral
+            features and decisions, not raw inference payloads by default. Model
+            predictions are returned to the caller and not persisted. Telemetry
+            is immutable; analyst feedback is stored separately. Configure
+            retention according to your policy; avoid sending sensitive raw
+            inputs unless required.
+          </p>
+        </section>
+
+        <section id="limits">
+          <h2>Limitations</h2>
+          <p>BATMAN reduces risk; it does not eliminate it. It does <strong>not</strong>:</p>
+          <ul>
+            <li>protect against every cyberattack;</li>
+            <li>guarantee perfect detection or zero false positives;</li>
+            <li>replace a WAF, SIEM, IAM, or infrastructure security;</li>
+            <li>guarantee detection of every adversarial example.</li>
+          </ul>
+          <p>Detection thresholds must be calibrated against your model's own traffic distribution.</p>
+        </section>
+
+        <section id="troubleshooting">
+          <h2>Troubleshooting</h2>
+          <h3>401 unauthorized</h3>
+          <p>The API key is missing, malformed (must start with <code>bm_live_</code>), or revoked. Data-plane calls use the <code>x-api-key</code> header; control-plane calls use <code>Authorization: Bearer</code>.</p>
+          <h3>403 blocked</h3>
+          <p>BATMAN blocked the request by policy. Inspect the returned decision (or <code>BlockedError.decision</code>) for the threat type and evidence.</p>
+          <h3>429 rate limited</h3>
+          <p>You exceeded the per-key/session limit. Back off using <code>Retry-After</code> / <code>RateLimitedError.retry_after</code>.</p>
+          <h3>502 upstream error</h3>
+          <p>Your protected model API failed or was unreachable. Check the upstream URL, auth, and timeout in the model's upstream config.</p>
+          <h3>Legitimate traffic is being flagged</h3>
+          <p>The anomaly detector must be calibrated on <em>your</em> normal traffic distribution. Run in <code>monitor</code> mode first and tune thresholds before enforcing.</p>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

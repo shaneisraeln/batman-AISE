@@ -1,0 +1,104 @@
+# BATMAN Phase-2 CLOUD stack.
+#
+#   caddy (reverse proxy, HTTPS)  ── / → landing · /app → dashboard · /v1,/auth,... → cloud-api
+#   cloud-api (FastAPI control + data plane)
+#   postgres (persistence)
+#   dashboard (React SPA)
+#   landing (static site + docs)
+#
+# Secrets come from a local .env (gitignored). Copy .env.cloud.example -> .env
+# and fill in strong values. NEVER commit real secrets.
+#
+#   docker compose -f docker-compose.cloud.yml up --build
+#
+# This is SEPARATE from docker-compose.yml (the Phase-1 gateway+ml-service demo).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-batman}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      - POSTGRES_DB=${POSTGRES_DB:-batman}
+    volumes:
+      - batman_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-batman}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cloud-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - BATMAN_ENV=${BATMAN_ENV:-production}
+      - BATMAN_DATABASE_URL=postgresql://${POSTGRES_USER:-batman}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-batman}
+      - BATMAN_SECRET_KEY=${BATMAN_SECRET_KEY:?set BATMAN_SECRET_KEY in .env}
+      - BATMAN_ENCRYPTION_KEY=${BATMAN_ENCRYPTION_KEY:?set BATMAN_ENCRYPTION_KEY (Fernet key) in .env}
+      - BATMAN_DETECTOR_PATH=models/isolation_forest_breast_cancer.joblib
+      - BATMAN_MODE=enforce
+      # Same-origin behind Caddy needs no CORS, but if the dashboard is served
+      # from a different origin, list it here (comma-separated, no trailing slash).
+      - BATMAN_CORS_ORIGINS=${BATMAN_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      # SSRF guard stays ON in production (no bundled private ml-service here).
+      # Only set to 1 if your protected model is on a trusted private network.
+      - BATMAN_ALLOW_PRIVATE_UPSTREAM=${BATMAN_ALLOW_PRIVATE_UPSTREAM:-0}
+      - BATMAN_LLM_PROVIDER=${BATMAN_LLM_PROVIDER:-stub}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-20b}
+    expose:
+      - "8100"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8100/v1/health').status==200 else 1)\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  dashboard:
+    build:
+      context: ./dashboard
+      args:
+        VITE_BASE: /app/
+    restart: unless-stopped
+    expose:
+      - "4173"
+    depends_on:
+      - cloud-api
+
+  landing:
+    build: ./landing
+    restart: unless-stopped
+    expose:
+      - "80"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - cloud-api
+      - dashboard
+      - landing
+    environment:
+      # Leave unset for local HTTP on :80. Set to your domain (e.g.
+      # batman.example.com) for automatic Let's Encrypt HTTPS.
+      - BATMAN_SITE_ADDRESS=${BATMAN_SITE_ADDRESS:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  batman_pg:
+  caddy_data:
+  caddy_config:

@@ -1,15 +1,38 @@
+# BATMAN Phase-1 real stack:
+#   ml-service  — the real protected ML inference API (Breast Cancer model)
+#   gateway     — BATMAN, proxying to ml-service with the breast-cancer detector
+#   dashboard   — security console
+#
+# One command:  docker compose up --build
 services:
+  ml-service:
+    build: ./ml-service
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:9000/health').status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   gateway:
     build: .
     ports:
       - "8000:8000"
+    depends_on:
+      ml-service:
+        condition: service_healthy
     volumes:
       - batman_data:/data
     environment:
       - BATMAN_MODE=enforce
+      # Proxy to the REAL ML service and use the detector calibrated for it.
+      - BATMAN_PROTECTED_MODEL_URL=http://ml-service:9000
+      - BATMAN_PROTECTED_MODEL_PATH=/predict
+      - BATMAN_DETECTOR_PATH=models/isolation_forest_breast_cancer.joblib
       - BATMAN_LLM_PROVIDER=${BATMAN_LLM_PROVIDER:-stub}
       - GROQ_API_KEY=${GROQ_API_KEY:-}
-      - GROQ_MODEL=${GROQ_MODEL:-llama-3.1-8b-instant}
+      - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-20b}
       - BATMAN_EMBEDDINGS_BACKEND=${BATMAN_EMBEDDINGS_BACKEND:-hashing}
       - BATMAN_VECTOR_STORE=${BATMAN_VECTOR_STORE:-memory}
 

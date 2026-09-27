@@ -1,0 +1,49 @@
+# BATMAN reverse proxy (Caddy).
+#
+# The site address is driven by the BATMAN_SITE_ADDRESS env var:
+#   - Local compose testing (default):  :80   -> plain HTTP on localhost
+#   - Public deployment:                batman.example.com
+#         When set to a real domain, Caddy AUTOMATICALLY provisions and renews
+#         Let's Encrypt TLS certificates and serves HTTPS (and redirects HTTP).
+#
+# Set it in your .env:   BATMAN_SITE_ADDRESS=batman.example.com
+# (docker-compose.cloud.yml passes it through to this container.)
+#
+# Routing:
+#   /v1/*, /auth/*, /projects*, /models*, /keys*  -> cloud API (data + control plane)
+#   /app/*                                          -> dashboard SPA
+#   /                                               -> public landing + docs
+#
+# HTTPS is mandatory for any public deployment; a real domain enables it here
+# with zero extra config.
+
+{$BATMAN_SITE_ADDRESS::80} {
+    encode gzip
+
+    # --- BATMAN API (control plane + data plane) ---
+    @api {
+        path /v1/* /auth/* /projects /projects/* /models /models/* /keys /keys/*
+    }
+    handle @api {
+        reverse_proxy cloud-api:8100
+    }
+
+    # --- Dashboard SPA ---
+    handle_path /app/* {
+        reverse_proxy dashboard:4173
+    }
+    redir /app /app/ 308
+
+    # --- Public landing + docs (default) ---
+    handle {
+        reverse_proxy landing:80
+    }
+
+    # Basic security headers.
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+}

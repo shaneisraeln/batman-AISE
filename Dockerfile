@@ -18,9 +18,12 @@ COPY training ./training
 COPY evaluation ./evaluation
 COPY scripts ./scripts
 
-# Build the demo model + detector at image build time so the container is
-# self-contained and ready to demo.
-RUN python -m training.prepare && python -m training.train
+# Build models + detectors at image build time so the container is
+# self-contained. prepare builds BOTH reference pools (digits + breast_cancer);
+# we train the legacy digits detector and the real-service breast_cancer detector.
+RUN python -m training.prepare \
+    && python -m training.train \
+    && python -m training.train --dataset breast_cancer
 
 # Persist telemetry outside the image layer.
 VOLUME ["/data"]

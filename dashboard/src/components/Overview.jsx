@@ -9,69 +9,154 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  CartesianGrid,
 } from "recharts";
-import { StatCards } from "./StatCards.jsx";
+import { IDLE_LINES, pick } from "./eggs.js";
 
-const COLORS = ["#f5c518", "#e74c3c", "#3498db", "#2ecc71", "#9b59b6", "#f39c12"];
+const AXIS = { stroke: "#3a3a3a", fontSize: 10, fontFamily: "JetBrains Mono" };
+const THREAT_COLORS = {
+  MODEL_EXTRACTION: "#f2c14e",
+  ANOMALOUS_INPUT: "#c0392b",
+  API_ABUSE: "#b8862b",
+  INVALID_REQUEST: "#4a6b8a",
+};
 
-export function Overview({ metrics }) {
-  const actionData = Object.entries(metrics.actions || {}).map(([k, v]) => ({
-    name: k,
-    count: v,
+export function Overview({ metrics, threats = [], onSelect }) {
+  const total = metrics.total_requests ?? 0;
+  const kpis = [
+    { label: "Total Requests", value: total, cls: "" },
+    { label: "Allowed", value: metrics.allowed ?? 0, cls: "ok", foot: "passed the watch" },
+    { label: "Rate Limited", value: metrics.rate_limited ?? 0, cls: "warn", foot: "slowed down" },
+    { label: "Blocked", value: metrics.blocked ?? 0, cls: "danger", foot: "denied entry" },
+    { label: "Active Threats", value: metrics.active_threats ?? 0, cls: "amber" },
+    { label: "Escalated", value: metrics.escalated ?? 0, cls: "" },
+    { label: "Avg Latency", value: `${metrics.avg_latency_ms ?? 0}ms`, cls: "", foot: "per decision" },
+    {
+      label: "Threat Types",
+      value: Object.keys(metrics.threat_categories || {}).length,
+      cls: "",
+    },
+  ];
+
+  const actionData = Object.entries(metrics.actions || {}).map(([name, count]) => ({
+    name,
+    count,
   }));
   const threatData = Object.entries(metrics.threat_categories || {}).map(
-    ([k, v]) => ({ name: k, value: v })
+    ([name, value]) => ({ name, value })
   );
+  const recent = threats.slice(0, 8);
 
   return (
     <div>
-      <StatCards metrics={metrics} />
-      <div className="detail-grid">
+      <div className="kpis">
+        {kpis.map((k) => (
+          <div className="kpi" key={k.label}>
+            <div className="label">{k.label}</div>
+            <div className={`value ${k.cls}`}>{k.value}</div>
+            {k.foot && <div className="foot">{k.foot}</div>}
+          </div>
+        ))}
+      </div>
+
+      <div className="panels">
         <div className="panel">
-          <h2>Actions Taken</h2>
-          {actionData.length === 0 ? (
-            <div className="empty">No traffic yet. Run the demo simulator.</div>
-          ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={actionData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#26304a" />
-                <XAxis dataKey="name" stroke="#8a97b1" fontSize={11} />
-                <YAxis stroke="#8a97b1" fontSize={11} allowDecimals={false} />
-                <Tooltip
-                  contentStyle={{ background: "#1b2333", border: "1px solid #26304a" }}
-                />
-                <Bar dataKey="count" fill="#f5c518" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
+          <div className="phead">Actions Taken</div>
+          <div className="pbody">
+            {actionData.length === 0 ? (
+              <Idle />
+            ) : (
+              <ResponsiveContainer width="100%" height={230}>
+                <BarChart data={actionData}>
+                  <XAxis dataKey="name" {...AXIS} />
+                  <YAxis {...AXIS} allowDecimals={false} />
+                  <Tooltip cursor={{ fill: "rgba(242,193,78,0.05)" }} />
+                  <Bar dataKey="count" fill="#f2c14e" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </div>
+
         <div className="panel">
-          <h2>Threat Categories</h2>
-          {threatData.length === 0 ? (
-            <div className="empty">No threats detected yet.</div>
-          ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <PieChart>
-                <Pie
-                  data={threatData}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={95}
-                  label={(e) => e.name}
-                >
-                  {threatData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+          <div className="phead">Threat Categories</div>
+          <div className="pbody">
+            {threatData.length === 0 ? (
+              <Idle />
+            ) : (
+              <ResponsiveContainer width="100%" height={230}>
+                <PieChart>
+                  <Pie
+                    data={threatData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={52}
+                    outerRadius={88}
+                    paddingAngle={2}
+                    stroke="#000"
+                  >
+                    {threatData.map((d) => (
+                      <Cell key={d.name} fill={THREAT_COLORS[d.name] || "#3a3a3a"} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+
+        <div className="panel full">
+          <div className="phead">
+            Recent Activity
+            <span className="faint">{recent.length ? "live feed" : ""}</span>
+          </div>
+          <div className="pbody" style={{ padding: 0 }}>
+            {recent.length === 0 ? (
+              <Idle />
+            ) : (
+              <table className="tbl">
+                <tbody>
+                  {recent.map((t) => (
+                    <tr
+                      key={t.request_id}
+                      className="row"
+                      onClick={() => onSelect && onSelect(t.request_id)}
+                    >
+                      <td className="faint mono" style={{ width: 90 }}>
+                        {fmtTime(t.timestamp)}
+                      </td>
+                      <td>
+                        <span className={`tick ${t.threat_level}`}>{t.threat_type}</span>
+                      </td>
+                      <td className="muted mono">{t.session_id}</td>
+                      <td style={{ textAlign: "right" }}>
+                        <span className={`act ${t.action}`}>{t.action}</span>
+                      </td>
+                    </tr>
                   ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ background: "#1b2333", border: "1px solid #26304a" }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
+}
+
+function Idle() {
+  return (
+    <div className="empty">
+      <div className="glyph">🦇</div>
+      {pick(IDLE_LINES)}
+    </div>
+  );
+}
+
+function fmtTime(ts) {
+  try {
+    return new Date(ts).toLocaleTimeString([], { hour12: false });
+  } catch {
+    return "—";
+  }
 }

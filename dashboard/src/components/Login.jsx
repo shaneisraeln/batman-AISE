@@ -97,6 +97,7 @@ export function Login({ onAuthed, initialMode = "login" }) {
           </button>
         </form>
         <div className="auth-foot">Your key. Your model. Watched.</div>
+        <a className="auth-back" href="/">← Back to site</a>
       </div>
     </div>
   );

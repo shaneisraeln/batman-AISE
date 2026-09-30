@@ -76,9 +76,23 @@ export default function App() {
     return (
       <Login
         initialMode={initialMode}
-        onAuthed={({ isNew }) => {
+        onAuthed={async ({ isNew }) => {
           setAuthed(true);
-          navigate(isNew ? "onboard" : "app");
+          // Fresh signups always onboard. A returning user who never finished
+          // setup (no project yet) is routed into onboarding too, so nobody
+          // lands on an empty dashboard. Existing users go straight to the app.
+          let dest = "app";
+          if (isNew) {
+            dest = "onboard";
+          } else {
+            try {
+              const { projects } = await api.projects();
+              if (!projects || projects.length === 0) dest = "onboard";
+            } catch {
+              /* on any error, fall back to the dashboard */
+            }
+          }
+          navigate(dest);
         }}
       />
     );
@@ -100,10 +114,10 @@ export default function App() {
     <div className="shell">
       {signal && <SignalFlash />}
       <aside className="sidebar">
-        <div className="mark" title="It's not who I am underneath...">
+        <a className="mark" href="/" title="Back to batman.site">
           <BatLogo />
           <span className="name">BATMAN</span>
-        </div>
+        </a>
         <nav className="nav">
           {NAV.map((g) => (
             <div key={g.group} className="nav-group">

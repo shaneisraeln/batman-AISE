@@ -66,4 +66,59 @@ describe("App auth gate", () => {
     expect(screen.getByRole("button", { name: "Analytics" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Feedback" })).toBeInTheDocument();
   });
+
+  it("routes a returning login WITHOUT projects into onboarding", async () => {
+    installFetch({
+      "POST /auth/login": { token: "tok_empty" },
+      "GET /projects": { projects: [] }, // no projects -> onboarding
+      ...EMPTY_MONITORING,
+    });
+    render(<App />);
+    const user = userEvent.setup();
+    await user.type(screen.getByPlaceholderText("email"), "new@b.com");
+    await user.type(screen.getByPlaceholderText("password (min 8 chars)"), "password123");
+    await user.click(screen.getByRole("button", { name: /Enter the Batcave/i }));
+    // The onboarding wizard (not the dashboard) appears.
+    await waitFor(() =>
+      expect(screen.getByText(/protect your first model/i)).toBeInTheDocument()
+    );
+  });
+
+  it("routes a returning login WITH projects to the dashboard", async () => {
+    installFetch({
+      "POST /auth/login": { token: "tok_has" },
+      "GET /projects": { projects: [{ project_id: "p1", name: "P", environment: "development" }] },
+      ...EMPTY_MONITORING,
+    });
+    render(<App />);
+    const user = userEvent.setup();
+    await user.type(screen.getByPlaceholderText("email"), "old@b.com");
+    await user.type(screen.getByPlaceholderText("password (min 8 chars)"), "password123");
+    await user.click(screen.getByRole("button", { name: /Enter the Batcave/i }));
+    await waitFor(() => expect(screen.getByText("Monitor")).toBeInTheDocument());
+  });
+
+  it("offers a back-to-site link on the auth screen", async () => {
+    installFetch({});
+    render(<App />);
+    const back = await screen.findByRole("link", { name: /back to site/i });
+    expect(back).toHaveAttribute("href", "/");
+  });
+
+  it("signup takes a brand-new user into onboarding", async () => {
+    window.location.hash = "#/signup";
+    installFetch({
+      "POST /auth/signup": { token: "tok_signup" },
+      "GET /projects": { projects: [] },
+      ...EMPTY_MONITORING,
+    });
+    render(<App />);
+    const user = userEvent.setup();
+    await user.type(screen.getByPlaceholderText("email"), "fresh@b.com");
+    await user.type(screen.getByPlaceholderText("password (min 8 chars)"), "password123");
+    await user.click(screen.getByRole("button", { name: /Create account/i }));
+    await waitFor(() =>
+      expect(screen.getByText(/protect your first model/i)).toBeInTheDocument()
+    );
+  });
 });

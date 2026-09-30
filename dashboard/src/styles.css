@@ -494,3 +494,11 @@ body::before {
 .fblabel.FALSE_POSITIVE { color: var(--warn); border-color: var(--warn); }
 .fblabel.TRUE_NEGATIVE { color: var(--ok); border-color: var(--ok); }
 .fblabel.UNCERTAIN { color: var(--amber); border-color: var(--amber-dim); }
+
+/* ============================ auth: back-to-site link ============================ */
+.auth-back {
+  display: block; text-align: center; margin-top: 14px; color: var(--faint);
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+  text-transform: uppercase; text-decoration: none;
+}
+.auth-back:hover { color: var(--amber); }

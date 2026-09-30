@@ -143,42 +143,51 @@ Expect your user object. If this works, Render is talking to Neon Postgres.
 
 ## 8. Vercel — log in + deploy the dashboard
 
+BATMAN ships the **landing + dashboard as ONE Vercel deployment** so the landing
+CTAs (`/app/#/signup`, `/app/#/login`) are live links on the same origin. This is
+driven by the repo-root `vercel.json` + `scripts/build_site.mjs`, which assemble
+`/` → landing, `/docs/` → docs, `/app/` → the dashboard SPA (built `base=/app/`).
+
 ```powershell
 vercel login
 ```
 `MANUAL ACTION`: complete the browser authentication, then come back.
 
-Deploy the dashboard, injecting the backend URL at build time:
+From the **repository root** (NOT `dashboard/`), link one project:
 ```powershell
-cd dashboard
-vercel link            # create/link a Vercel project (accept defaults; framework: Vite)
+vercel link            # accept defaults; Vercel uses vercel.json (build = scripts/build_site.mjs)
 ```
 
 ---
 
 ## 9. Vercel — set the frontend env var
 
-The dashboard reads `VITE_API_BASE` at build time (already wired in `api.js`):
+The dashboard bakes `VITE_API_BASE` into its bundle at build time. Set it to your
+Render backend URL:
 ```powershell
-# still in dashboard/
 vercel env add VITE_API_BASE production
 # when prompted, paste:  https://<render-url>
 ```
-(Repeat for `preview` and `development` targets if you want previews to work too.)
+(Add it to `preview`/`development` too if you want those to hit the backend.)
 
 ---
 
 ## 10. Vercel — production deploy
 
 ```powershell
-# still in dashboard/
+# from the repository ROOT
 vercel --prod
 ```
-Copy the production URL, e.g. `https://batman-dashboard.vercel.app`. Call it
-`<vercel-url>`.
+Vercel runs `node scripts/build_site.mjs` (per `vercel.json`): it builds the
+dashboard with `base=/app/` and assembles `public_site/`. Copy the production
+URL, e.g. `https://batman.vercel.app`. Call it `<vercel-url>`.
 
-> If you also want the landing page public, deploy `landing/` as a second Vercel
-> project (`cd ../landing; vercel --prod`) — it's static, no build/env needed.
+Verify the single origin:
+- `https://<vercel-url>/` → landing; "Get Started" → `/app/#/signup`
+- `https://<vercel-url>/app/` → dashboard shell
+- `https://<vercel-url>/docs/` → docs
+
+> One deployment = landing + app + docs. No second Vercel project needed.
 
 ---
 

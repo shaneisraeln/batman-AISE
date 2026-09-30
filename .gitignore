@@ -25,6 +25,9 @@ dashboard/node_modules/
 dashboard/dist/
 dashboard/.vite/
 
+# Assembled single-origin site (built by scripts/build_site.mjs for Vercel)
+public_site/
+
 # OS / editor
 .DS_Store
 .vscode/

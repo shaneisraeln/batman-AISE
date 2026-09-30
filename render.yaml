@@ -1,0 +1,56 @@
+# Render Blueprint for the BATMAN cloud API (FastAPI).
+#
+# Deploys ONLY the backend (batman.cloud.app:app) as a free Docker web service.
+# The dashboard + landing go to Vercel; PostgreSQL is external (Neon) because
+# Render's free Postgres expires after 30 days. See docs/FREE_DEPLOYMENT_PLAN.md.
+#
+# How the owner uses this:
+#   1. Push this repo to GitHub (done).
+#   2. Render Dashboard → New → Blueprint → pick this repo → it reads render.yaml.
+#   3. Set the secret env vars (marked sync:false below) in the Render UI.
+#   4. Deploy. Render builds the Docker image (which trains the detector at
+#      build time) and starts uvicorn on $PORT.
+#
+# The image binds to $PORT (Dockerfile.cloud CMD uses ${PORT:-8100}); Render
+# injects $PORT automatically.
+
+services:
+  - type: web
+    name: batman-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.cloud
+    plan: free
+    region: oregon            # change to the region nearest you if preferred
+    healthCheckPath: /v1/health
+    autoDeploy: true          # redeploy on push to the connected branch
+    envVars:
+      # --- runtime mode ---
+      - key: BATMAN_ENV
+        value: production
+      - key: BATMAN_MODE
+        value: enforce
+      - key: BATMAN_DETECTOR_PATH
+        value: models/isolation_forest_breast_cancer.joblib
+      - key: BATMAN_LLM_PROVIDER
+        value: stub
+      # SSRF guard ON in production (no bundled private ml-service here).
+      - key: BATMAN_ALLOW_PRIVATE_UPSTREAM
+        value: "0"
+
+      # --- secrets: set these in the Render UI; never commit real values ---
+      # Neon PostgreSQL connection string (postgresql://...:...@...neon.tech/db?sslmode=require)
+      - key: BATMAN_DATABASE_URL
+        sync: false
+      # HMAC session-token signing secret. Render can generate this for you.
+      - key: BATMAN_SECRET_KEY
+        generateValue: true
+      # Fernet key for upstream-credential encryption. You must generate this
+      # locally (python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
+      # and paste it — it must be a valid 32-byte urlsafe-base64 Fernet key,
+      # which generateValue cannot guarantee.
+      - key: BATMAN_ENCRYPTION_KEY
+        sync: false
+      # Exact Vercel production origin, e.g. https://batman-dashboard.vercel.app
+      # (no trailing slash, never "*"). Set after the frontend is deployed.
+      - key: BATMAN_CORS_ORIGINS
+        sync: false

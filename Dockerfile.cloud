@@ -25,4 +25,8 @@ EXPOSE 8100
 # Config is provided via environment (see docker-compose.cloud.yml / .env):
 #   BATMAN_DATABASE_URL, BATMAN_SECRET_KEY, BATMAN_ENCRYPTION_KEY,
 #   BATMAN_DETECTOR_PATH, BATMAN_LLM_PROVIDER
-CMD ["uvicorn", "batman.cloud.app:app", "--host", "0.0.0.0", "--port", "8100"]
+#
+# PORT: Render (and most PaaS) inject $PORT at runtime. We bind to it when set,
+# and fall back to 8100 for local `docker run` / docker-compose. Shell form so
+# the variable expands.
+CMD ["sh", "-c", "uvicorn batman.cloud.app:app --host 0.0.0.0 --port ${PORT:-8100}"]

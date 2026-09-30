@@ -13,4 +13,5 @@ COPY app ./app
 RUN python -m app.train
 
 EXPOSE 9000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9000"]
+# Bind to $PORT when a PaaS (Render) injects it; default 9000 locally.
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-9000}"]

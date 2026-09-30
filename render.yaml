@@ -54,3 +54,15 @@ services:
       # (no trailing slash, never "*"). Set after the frontend is deployed.
       - key: BATMAN_CORS_ORIGINS
         sync: false
+
+  # Demo protected model (the upstream BATMAN proxies to). Public HTTPS URL is
+  # required because the SSRF guard blocks private upstreams in production.
+  - type: web
+    name: batman-ml-service
+    runtime: docker
+    dockerfilePath: ./ml-service/Dockerfile
+    dockerContext: ./ml-service
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    autoDeploy: true

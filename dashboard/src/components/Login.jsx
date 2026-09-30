@@ -26,11 +26,20 @@ export function Login({ onAuthed, initialMode = "login" }) {
       onAuthed({ isNew: false });
       return;
     } catch (e2) {
-      setErr(
-        mode === "signup"
-          ? "Could not sign up. Email may already be registered, or password too short (min 8)."
-          : "Invalid credentials."
-      );
+      // api.js throws "unauthorized" on 401 and "<path> -> <status> ..." on
+      // other HTTP errors; a network/CORS failure (e.g. a sleeping free-tier
+      // backend) surfaces as a TypeError with no status.
+      const msg = String(e2?.message || "");
+      const status = msg === "unauthorized" ? 401 : Number((msg.match(/-> (\d{3})/) || [])[1]) || 0;
+      if (status === 429) {
+        setErr("Too many attempts. Wait a minute and try again.");
+      } else if (status === 0 || status >= 500) {
+        setErr("Server unavailable. It may be waking up; try again in a minute.");
+      } else if (mode === "signup") {
+        setErr("Could not sign up. Email may already be registered, or password too short (min 8).");
+      } else {
+        setErr("Invalid credentials.");
+      }
     } finally {
       setBusy(false);
     }

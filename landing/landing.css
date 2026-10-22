@@ -87,10 +87,55 @@ body {
   mask-image: radial-gradient(ellipse at 50% 30%, black 40%, transparent 80%);
 }
 
+.bat-watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 720px;
+  max-width: 90vw;
+  opacity: 0.022;
+  pointer-events: none;
+  z-index: 0;
+  filter: drop-shadow(0 0 40px var(--amber));
+}
+
 a {
   color: inherit;
   text-decoration: none;
   transition: all 0.15s ease;
+}
+
+/* Top Classified Bar (Easter Egg) */
+.classified-bar {
+  background: #040404;
+  border-bottom: 1px solid var(--line);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--amber-dim);
+  padding: 6px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 101;
+}
+
+.classified-bar span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.classified-interactive {
+  cursor: pointer;
+  color: var(--amber);
+  transition: color 0.15s;
+}
+
+.classified-interactive:hover {
+  text-decoration: underline;
+  color: var(--amber-bright);
 }
 
 /* Navigation */
@@ -112,6 +157,7 @@ a {
   display: flex;
   align-items: center;
   gap: 12px;
+  cursor: pointer;
 }
 
 .brand .bat {
@@ -536,10 +582,22 @@ a {
   opacity: 1;
 }
 
-.card .ic {
+.card-icon {
+  width: 36px;
+  height: 36px;
   color: var(--amber);
-  font-size: 26px;
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(242, 193, 78, 0.2);
+  border-radius: 4px;
+  background: rgba(242, 193, 78, 0.03);
+}
+
+.card-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 .card h3 {
@@ -708,7 +766,20 @@ a {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
+
+.sim-btn .btn-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.sim-btn .btn-dot.ok { background: var(--ok); }
+.sim-btn .btn-dot.danger { background: var(--danger); }
+.sim-btn .btn-dot.warn { background: var(--warn); }
 
 .sim-btn:hover {
   border-color: var(--amber-dim);
@@ -747,9 +818,9 @@ a {
 }
 
 .sim-terminal .ts { color: var(--text-faint); margin-right: 6px; }
-.sim-terminal .tag-ok { color: var(--ok); }
+.sim-terminal .tag-ok { color: var(--ok); font-weight: 600; }
 .sim-terminal .tag-block { color: var(--danger); font-weight: 700; }
-.sim-terminal .tag-warn { color: var(--warn); }
+.sim-terminal .tag-warn { color: var(--warn); font-weight: 600; }
 .sim-terminal .tag-amber { color: var(--amber); }
 
 .sim-telemetry {
@@ -891,6 +962,96 @@ a {
   color: var(--text);
 }
 
+/* Batcomputer Secret Modal (Easter Egg) */
+.bat-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.bat-modal.active {
+  display: flex;
+}
+
+.bat-modal-box {
+  background: #030303;
+  border: 1px solid var(--amber-dim);
+  border-radius: 6px;
+  box-shadow: 0 0 50px rgba(242, 193, 78, 0.25);
+  max-width: 680px;
+  width: 100%;
+  padding: 24px;
+  font-family: var(--mono);
+  color: #ccc;
+  position: relative;
+  animation: modal-fade 0.2s ease-out;
+}
+
+@keyframes modal-fade {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.bat-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.bat-modal-header h3 {
+  font-family: var(--display);
+  letter-spacing: 2px;
+  color: var(--amber);
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.bat-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.bat-modal-close:hover {
+  color: var(--amber);
+}
+
+.bat-ascii {
+  color: var(--amber);
+  font-size: 10px;
+  line-height: 1.2;
+  margin-bottom: 14px;
+  white-space: pre;
+  user-select: none;
+}
+
+.bat-quote {
+  font-style: italic;
+  color: #fff;
+  border-left: 2px solid var(--amber);
+  padding-left: 12px;
+  margin: 14px 0;
+  font-size: 13px;
+}
+
+.bat-clearance {
+  font-size: 11px;
+  color: var(--ok);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
 /* Footer */
 .footer {
   position: relative;
@@ -938,12 +1099,22 @@ a {
   color: var(--amber);
 }
 
+.foot-quote {
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: var(--amber-dim);
+  letter-spacing: 1px;
+  margin-top: 20px;
+  font-style: italic;
+}
+
 .foot-note {
   color: var(--text-faint);
   font-size: 11px;
   letter-spacing: 1px;
   width: 100%;
-  margin-top: 16px;
+  margin-top: 12px;
   text-align: center;
   border-top: 1px solid #101010;
   padding-top: 16px;
@@ -959,4 +1130,5 @@ a {
   .pipe-arrow { display: none; }
   .nav { padding: 14px 20px; }
   .nav-links { display: none; }
+  .classified-bar { font-size: 9px; padding: 6px 14px; }
 }

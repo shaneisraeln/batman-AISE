@@ -31,9 +31,11 @@ const out = resolve(root, "public_site");
 const dashboard = resolve(root, "dashboard");
 const landing = resolve(root, "landing");
 
+const apiBase = process.env.VITE_API_BASE || "https://batman-api-tdnk.onrender.com";
+
 function run(cmd, cwd) {
   console.log(`\n$ ${cmd}  (cwd=${cwd})`);
-  execSync(cmd, { cwd, stdio: "inherit", env: { ...process.env, VITE_BASE: "/app/" } });
+  execSync(cmd, { cwd, stdio: "inherit", env: { ...process.env, VITE_BASE: "/app/", VITE_API_BASE: apiBase } });
 }
 
 // 0) clean output

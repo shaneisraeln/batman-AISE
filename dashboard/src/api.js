@@ -4,7 +4,7 @@
 // obtained at login; the token is stored in localStorage. All dashboard data is
 // real — fetched from the backend, never fabricated.
 
-const BASE = import.meta.env.VITE_API_BASE || "";
+const BASE = import.meta.env.VITE_API_BASE || "https://batman-api-tdnk.onrender.com";
 const TOKEN_KEY = "batman_token";
 
 export function getToken() {

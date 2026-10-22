@@ -52,6 +52,8 @@ run("npm run build", dashboard); // vite reads VITE_BASE=/app/ from env
 cpSync(landing, out, { recursive: true });
 // The landing Dockerfile is irrelevant to a static host; drop it if copied.
 rmSync(resolve(out, "Dockerfile"), { force: true });
+// Copy docs.css to root of public_site as fallback for clean /docs routes
+cpSync(resolve(landing, "docs", "docs.css"), resolve(out, "docs.css"));
 
 // 3) copy the built dashboard under /app/
 cpSync(resolve(dashboard, "dist"), resolve(out, "app"), { recursive: true });

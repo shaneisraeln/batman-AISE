@@ -6,6 +6,8 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/app", "destination": "/app/index.html" },
-    { "source": "/app/", "destination": "/app/index.html" }
+    { "source": "/app/", "destination": "/app/index.html" },
+    { "source": "/docs", "destination": "/docs/index.html" },
+    { "source": "/docs/", "destination": "/docs/index.html" }
   ]
 }

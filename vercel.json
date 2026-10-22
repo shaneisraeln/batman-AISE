@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
   "buildCommand": "node scripts/build_site.mjs",
   "outputDirectory": "public_site",
-  "installCommand": "npm install --no-audit --no-fund --prefix dashboard",
   "cleanUrls": true,
   "rewrites": [
     { "source": "/app", "destination": "/app/index.html" },

@@ -35,7 +35,7 @@ const apiBase = process.env.VITE_API_BASE || "https://batman-api-tdnk.onrender.c
 
 function run(cmd, cwd) {
   console.log(`\n$ ${cmd}  (cwd=${cwd})`);
-  execSync(cmd, { cwd, stdio: "inherit", env: { ...process.env, VITE_BASE: "/app/", VITE_API_BASE: apiBase } });
+  execSync(cmd, { cwd, stdio: "inherit", env: { ...process.env, VITE_BASE: "./", VITE_API_BASE: apiBase } });
 }
 
 // 0) clean output
@@ -55,6 +55,7 @@ rmSync(resolve(out, "Dockerfile"), { force: true });
 
 // 3) copy the built dashboard under /app/
 cpSync(resolve(dashboard, "dist"), resolve(out, "app"), { recursive: true });
+cpSync(resolve(dashboard, "dist"), resolve(landing, "app"), { recursive: true });
 
 console.log(`\n✓ Public site assembled at: ${out}`);
 console.log("  /            -> landing");

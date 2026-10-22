@@ -80,20 +80,42 @@ def create_cloud_app(database_url: str | None = None, enable_llm: bool = False) 
     app = FastAPI(title="BATMAN Cloud API", version="2.0.0")
     # CORS locked to explicit origins (never wildcard for a token-bearing API).
     # Configure via BATMAN_CORS_ORIGINS (comma-separated); dev default is localhost.
-    cors_origins = [
-        o.strip()
-        for o in os.getenv(
-            "BATMAN_CORS_ORIGINS",
-            "http://localhost:5173,http://127.0.0.1:5173",
-        ).split(",")
-        if o.strip()
-    ]
+    raw_origins = os.getenv("BATMAN_CORS_ORIGINS")
+    if not raw_origins:
+        cors_origins = [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:3100",
+            "http://127.0.0.1:3100",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:5500",
+            "http://127.0.0.1:5500",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000",
+        ]
+    elif raw_origins.strip() == "*":
+        cors_origins = [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:3100",
+            "http://127.0.0.1:3100",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:5500",
+            "http://127.0.0.1:5500",
+        ]
+    else:
+        cors_origins = [o.strip() for o in raw_origins.split(",") if o.strip() and o.strip() != "*"]
+
+    # Allow any Vercel domain preview automatically alongside localhost
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
+        allow_origin_regex=r"^https://.*\.vercel\.app$",
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type", "x-api-key"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
     app.state.service = service
     app.state.engine = engine
@@ -135,6 +157,27 @@ def create_cloud_app(database_url: str | None = None, enable_llm: bool = False) 
         return record
 
     # ---------------- auth endpoints ----------------
+    @app.get("/v1/db-health")
+    def db_health():
+        try:
+            backend = "postgres" if getattr(db, "is_postgres", False) else "sqlite"
+            url_display = db.url.split("@")[-1] if "@" in db.url else db.url
+            user_count = service.users.db.query_one("SELECT count(*) as c FROM users")
+            return {
+                "status": "ok",
+                "backend": backend,
+                "url": url_display,
+                "users": user_count.get("c", 0) if user_count else 0,
+            }
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "backend": "postgres" if getattr(db, "is_postgres", False) else "sqlite",
+                "error": f"{type(e).__name__}: {e}",
+                "traceback": traceback.format_exc(),
+            }
+
     @app.post("/auth/signup", response_model=TokenResponse)
     def signup(req: SignupRequest):
         _throttle_control(control_limiter, "signup")
@@ -144,7 +187,17 @@ def create_cloud_app(database_url: str | None = None, enable_llm: bool = False) 
             raise HTTPException(status_code=400, detail=str(e))
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
-        return TokenResponse(token=service_login(service, req.email, req.password))
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=f"signup_error: {type(e).__name__}: {e}")
+        try:
+            token = service_login(service, req.email, req.password)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=f"token_error: {type(e).__name__}: {e}")
+        return TokenResponse(token=token)
 
     @app.post("/auth/login", response_model=TokenResponse)
     def login(req: LoginRequest):
@@ -153,6 +206,10 @@ def create_cloud_app(database_url: str | None = None, enable_llm: bool = False) 
             token = service.login(req.email, req.password)
         except ServiceError:
             raise HTTPException(status_code=401, detail="invalid_credentials")
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=f"login_error: {type(e).__name__}: {e}")
         return TokenResponse(token=token)
 
     @app.get("/auth/me")

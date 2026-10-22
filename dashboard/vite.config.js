@@ -9,7 +9,7 @@ const CLOUD = process.env.BATMAN_CLOUD_URL || "http://localhost:8100";
 
 export default defineConfig({
   // Served at "/" in dev; set VITE_BASE=/app/ when deployed behind the proxy.
-  base: process.env.VITE_BASE || "/",
+  base: process.env.VITE_BASE || "./",
   plugins: [react()],
   server: {
     port: 5173,

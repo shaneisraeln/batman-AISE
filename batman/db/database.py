@@ -67,25 +67,66 @@ class Database:
             return [dict(r) for r in rows]  # already dict_row
         return [dict(r) for r in rows]  # sqlite3.Row -> dict
 
+    def _ensure_conn(self) -> None:
+        """Ensure connection is alive; reconnect if closed or dropped by cloud pooler."""
+        if not self.is_postgres:
+            return
+        needs_reconnect = False
+        try:
+            if self._conn is None or getattr(self._conn, "closed", False):
+                needs_reconnect = True
+            else:
+                cur = self._conn.cursor()
+                cur.execute("SELECT 1")
+                cur.close()
+        except Exception:
+            needs_reconnect = True
+
+        if needs_reconnect:
+            try:
+                if self._conn and not getattr(self._conn, "closed", False):
+                    self._conn.close()
+            except Exception:
+                pass
+            self._conn = self._connect()
+
     # --- operations ---
     def execute(self, sql: str, params: tuple = ()) -> int:
         """Run an INSERT/UPDATE/DELETE/DDL. Returns affected row count."""
         sql = self._translate(sql)
         with self._lock:
-            cur = self._conn.cursor()
-            cur.execute(sql, params)
-            rowcount = cur.rowcount
-            if not self.is_postgres:
-                self._conn.commit()
-            cur.close()
-            return rowcount
+            self._ensure_conn()
+            try:
+                cur = self._conn.cursor()
+                cur.execute(sql, params)
+                rowcount = cur.rowcount
+                if not self.is_postgres:
+                    self._conn.commit()
+                cur.close()
+                return rowcount
+            except Exception:
+                if self.is_postgres:
+                    self._conn = self._connect()
+                    cur = self._conn.cursor()
+                    cur.execute(sql, params)
+                    rowcount = cur.rowcount
+                    cur.close()
+                    return rowcount
+                raise
 
     def executescript(self, script: str) -> None:
         with self._lock:
+            self._ensure_conn()
             if self.is_postgres:
-                cur = self._conn.cursor()
-                cur.execute(script)
-                cur.close()
+                try:
+                    cur = self._conn.cursor()
+                    cur.execute(script)
+                    cur.close()
+                except Exception:
+                    self._conn = self._connect()
+                    cur = self._conn.cursor()
+                    cur.execute(script)
+                    cur.close()
             else:
                 self._conn.executescript(script)
                 self._conn.commit()
@@ -93,11 +134,22 @@ class Database:
     def query(self, sql: str, params: tuple = ()) -> list[dict[str, Any]]:
         sql = self._translate(sql)
         with self._lock:
-            cur = self._conn.cursor()
-            cur.execute(sql, params)
-            rows = cur.fetchall()
-            cur.close()
-        return self._rows_to_dicts(rows)
+            self._ensure_conn()
+            try:
+                cur = self._conn.cursor()
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+                cur.close()
+                return self._rows_to_dicts(rows)
+            except Exception:
+                if self.is_postgres:
+                    self._conn = self._connect()
+                    cur = self._conn.cursor()
+                    cur.execute(sql, params)
+                    rows = cur.fetchall()
+                    cur.close()
+                    return self._rows_to_dicts(rows)
+                raise
 
     def query_one(self, sql: str, params: tuple = ()) -> dict[str, Any] | None:
         rows = self.query(sql, params)

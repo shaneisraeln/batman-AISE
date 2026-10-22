@@ -4,7 +4,21 @@
 // obtained at login; the token is stored in localStorage. All dashboard data is
 // real — fetched from the backend, never fabricated.
 
-const BASE = import.meta.env.VITE_API_BASE || "https://batman-api-tdnk.onrender.com";
+// Smart API origin:
+// - When running locally (localhost / 127.0.0.1), use the local backend at http://127.0.0.1:8100
+// - When deployed to Vercel or any remote domain, use the cloud backend (https://batman-api-tdnk.onrender.com)
+// - Can be explicitly overridden at build or runtime via VITE_API_BASE or window.__BATMAN_API_BASE__
+function resolveApiBase() {
+  if (typeof window !== "undefined") {
+    if (window.__BATMAN_API_BASE__) return window.__BATMAN_API_BASE__;
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "http://127.0.0.1:8100";
+    }
+  }
+  return import.meta.env.VITE_API_BASE || "https://batman-api-tdnk.onrender.com";
+}
+
+const BASE = resolveApiBase();
 const TOKEN_KEY = "batman_token";
 
 export function getToken() {

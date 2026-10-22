@@ -92,12 +92,12 @@
 curl -X POST $BATMAN/keys \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"project_id":"proj_...","model_id":"model_...","name":"prod"}'
-# -> {"api_key":"bm_live_xxxxx", ...}   (shown once)</code></pre>
+# -> {"api_key":"<YOUR_API_KEY>", ...}   (shown once)</code></pre>
           <h3>5. Send inference through BATMAN</h3>
           <pre><code>pip install batman-ml</code></pre>
           <pre><code>from batman_ml import protect
 
-protected = protect(api_key="bm_live_xxxxx", base_url="$BATMAN")
+protected = protect(api_key="<YOUR_API_KEY>", base_url="$BATMAN")
 prediction = protected.predict(X)</code></pre>
         </section>
 
@@ -112,7 +112,7 @@ prediction = protected.predict(X)</code></pre>
           <pre><code>from batman_ml import protect
 
 protected = protect(
-    api_key="bm_live_xxxxx",        # or set BATMAN_API_KEY
+    api_key="<YOUR_API_KEY>",        # or set BATMAN_API_KEY
     base_url="https://your-batman", # or set BATMAN_BASE_URL
     raise_on_block=False,           # True -> BlockedError instead of a result
 )
@@ -121,7 +121,7 @@ result = protected.predict_secure(X)       # full decision + prediction</code></
           <h3>BatmanClient</h3>
           <pre><code>from batman_ml import BatmanClient
 
-client = BatmanClient(api_key="bm_live_xxxxx", base_url="https://your-batman")
+client = BatmanClient(api_key="<YOUR_API_KEY>", base_url="https://your-batman")
 r = client.predict(X)
 print(r.action, r.threat_type, r.prediction, r.request_id)
 # analyze without returning a prediction:
@@ -145,7 +145,7 @@ client.analyze(X)</code></pre>
           <h2>API integration (REST)</h2>
           <p>Prefer to call BATMAN directly? The data plane is one endpoint.</p>
           <pre><code>curl -X POST $BATMAN/v1/predict \
-  -H "x-api-key: bm_live_xxxxx" \
+  -H "x-api-key: <YOUR_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"inputs": [[/* feature vector */]], "session_id": "client-42"}'</code></pre>
           <p>Response:</p>

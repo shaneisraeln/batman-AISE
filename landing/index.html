@@ -217,11 +217,11 @@ model = joblib.load(<span class="str">"fraud_detector.joblib"</span>)
 <span class="cm"># Wrap with BATMAN runtime security</span>
 shielded_model = protect(
     model,
-    api_key=<span class="str">"bm_live_9b4e7a81c..."</span>,
+    api_key=<span class="str">"&lt;YOUR_API_KEY&gt;"</span>,
     base_url=<span class="str">"https://batman-api-tdnk.onrender.com"</span>
 )
 
-<span class="cm"># Standard scikit-learn API — security runs transparently</span>
+# Standard scikit-learn API — security runs transparently
 predictions = shielded_model.predict(X_test)</code></pre>
           </div>
 
@@ -233,19 +233,19 @@ predictions = shielded_model.predict(X_test)</code></pre>
 
 app = FastAPI()
 client = BatmanClient(
-    api_key=<span class="str">"bm_live_9b4e7a81c..."</span>,
+    api_key=<span class="str">"&lt;YOUR_API_KEY&gt;"</span>,
     base_url=<span class="str">"https://batman-api-tdnk.onrender.com"</span>
 )
 
-<span class="kw">@app.post</span>(<span class="str">"/predict"</span>)
-<span class="kw">def</span> <span class="fn">infer</span>(features: list[float]):
-    <span class="cm"># Screen request against session behavioral history</span>
+@app.post(<span class="str">"/predict"</span>)
+def <span class="fn">infer</span>(features: list[float]):
+    # Screen request against session behavioral history
     evaluation = client.evaluate(inputs=[features])
     
-    <span class="kw">if</span> evaluation.is_blocked:
-        <span class="kw">raise</span> HTTPException(status_code=<span class="num">403</span>, detail=<span class="str">f"Blocked: {evaluation.threat_type}"</span>)
+    if evaluation.is_blocked:
+        raise HTTPException(status_code=403, detail=f"Blocked: {evaluation.threat_type}")
         
-    <span class="kw">return</span> {<span class="str">"prediction"</span>: my_pytorch_model(features)}</code></pre>
+    return {"prediction": my_pytorch_model(features)}</code></pre>
           </div>
 
           <!-- Tab 3: Low-level SDK Client -->
@@ -254,20 +254,20 @@ client = BatmanClient(
             <pre><code id="code2"><span class="kw">from</span> batman_ml <span class="kw">import</span> BatmanClient
 
 client = BatmanClient(
-    api_key=<span class="str">"bm_live_..."</span>,
+    api_key=<span class="str">"&lt;YOUR_API_KEY&gt;"</span>,
     base_url=<span class="str">"https://batman-api-tdnk.onrender.com"</span>
 )
 
-<span class="cm"># Check gateway health</span>
+# Check gateway health
 status = client.health()
 print(status)  <span class="cm"># {'status': 'ok', 'mode': 'enforce', 'detector_ready': True}</span>
 
-<span class="cm"># Proxy inference request directly to your registered upstream</span>
+# Proxy inference request directly to your registered upstream
 result = client.predict(
-    inputs=[[<span class="num">17.99</span>, <span class="num">10.38</span>, <span class="num">122.8</span>, <span class="num">1001.0</span>, <span class="num">0.1184</span>]],
+    inputs=[[17.99, 10.38, 122.8, 1001.0, 0.1184]],
     model_id=<span class="str">"demo_cancer_classifier"</span>
 )
-print(result[<span class="str">"prediction"</span>])</code></pre>
+print(result["prediction"])</code></pre>
           </div>
 
           <!-- Tab 4: REST Gateway -->
@@ -275,10 +275,10 @@ print(result[<span class="str">"prediction"</span>])</code></pre>
             <button class="panel-copy-btn" onclick="copySnippet('code3')">Copy Code</button>
             <pre><code id="code3"><span class="cm"># Send inference queries from any language via HTTP</span>
 curl -X POST https://batman-api-tdnk.onrender.com/v1/predict \
-  -H <span class="str">"x-api-key: bm_live_9b4e7a81c..."</span> \
+  -H <span class="str">"x-api-key: &lt;YOUR_API_KEY&gt;"</span> \
   -H <span class="str">"Content-Type: application/json"</span> \
   -d '{
-    <span class="str">"inputs"</span>: [[<span class="num">1.42</span>, <span class="num">0.89</span>, <span class="num">-1.24</span>, <span class="num">0.05</span>, <span class="num">2.81</span>]],
+    <span class="str">"inputs"</span>: [[1.42, 0.89, -1.24, 0.05, 2.81]],
     <span class="str">"session_id"</span>: <span class="str">"sess_user_789"</span>
   }'</code></pre>
           </div>

@@ -211,7 +211,7 @@ export function Onboarding({ onDone }) {
               </p>
             )}
 
-            <IntegrationSnippets apiKey={freshKey || "bm_live_xxxxx"} />
+            <IntegrationSnippets apiKey={freshKey || "<YOUR_API_KEY>"} />
 
             <button className="btn auth-submit" type="button" onClick={onDone}>
               Enter the Batcave

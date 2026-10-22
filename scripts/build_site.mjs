@@ -57,7 +57,6 @@ cpSync(resolve(landing, "docs", "docs.css"), resolve(out, "docs.css"));
 
 // 3) copy the built dashboard under /app/
 cpSync(resolve(dashboard, "dist"), resolve(out, "app"), { recursive: true });
-cpSync(resolve(dashboard, "dist"), resolve(landing, "app"), { recursive: true });
 
 console.log(`\n✓ Public site assembled at: ${out}`);
 console.log("  /            -> landing");

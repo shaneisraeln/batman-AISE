@@ -48,7 +48,7 @@ export function Settings({ health, onLogout }) {
           <pre className="code-block">{`from batman_ml import protect
 
 protected = protect(
-    api_key="bm_live_xxxxx",      # from the API Keys tab
+    api_key="<YOUR_API_KEY>",      # from the API Keys tab
     base_url="${window.location.origin}",
 )
 prediction = protected.predict(X)`}</pre>
@@ -59,7 +59,7 @@ prediction = protected.predict(X)`}</pre>
           <pre className="code-block">{`from batman_ml import BatmanClient
 
 client = BatmanClient(
-    api_key="bm_live_xxxxx",
+    api_key="<YOUR_API_KEY>",
     base_url="${window.location.origin}",
 )
 result = client.predict(X)
@@ -69,7 +69,7 @@ print(result.prediction)`}</pre>
             Or call the REST data plane directly:
           </p>
           <pre className="code-block">{`curl -X POST ${window.location.origin}/v1/predict \\
-  -H "x-api-key: bm_live_xxxxx" \\
+  -H "x-api-key: <YOUR_API_KEY>" \\
   -H "Content-Type: application/json" \\
   -d '{"inputs": [[/* features */]]}'`}</pre>
         </div>

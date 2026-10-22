@@ -8,7 +8,7 @@ version = "2.0.0"
 description = "Behavioral AI Threat Monitoring and Mitigation for ML Models — a model-agnostic runtime inference security gateway."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "BATMAN" }]
 dependencies = [
     "fastapi>=0.142",

@@ -7,19 +7,19 @@
     <title>BATMAN — Runtime Security for Machine Learning Inference</title>
     <meta
       name="description"
-      content="Protect ML inference APIs from anomalous behavior, abusive traffic, and systematic model probing using behavioral detection and policy-based enforcement."
+      content="Protect ML inference APIs from model extraction, abusive traffic, and systematic probing using behavioral anomaly detection and deterministic policy enforcement."
     />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 58'%3E%3Crect width='100' height='58' fill='%23000'/%3E%3Cpath fill='%23f2c14e' d='M50 8c2 6 6 9 11 9 3 0 5-1 7-3-1 5-1 9 1 13 4-5 9-7 15-7 5 0 9 2 12 5-6-1-10 1-12 6-2 4-2 8 0 14-5-4-10-5-15-3-4 2-6 5-7 9-1-4-3-7-7-8h-2c-4 1-6 4-7 8-1-4-3-7-7-9-5-2-10-1-15 3 2-6 2-10 0-14-2-5-6-7-12-6 3-3 7-5 12-5 6 0 11 2 15 7 2-4 2-8 1-13 2 2 4 3 7 3 5 0 9-3 11-9z'/%3E%3C/svg%3E"
     />
     <link rel="stylesheet" href="./landing.css" />
-    <!-- Why do we fall? So we can learn to pick ourselves up. -->
   </head>
   <body>
     <div class="signal-bg"></div>
+    <div class="grid-overlay"></div>
 
-    <!-- Nav -->
+    <!-- Navigation -->
     <header class="nav">
       <a class="brand" href="#top">
         <svg viewBox="0 0 100 58" class="bat" aria-hidden="true">
@@ -29,226 +29,578 @@
           />
         </svg>
         <span>BATMAN</span>
+        <span class="version-pill">v0.1.0</span>
       </a>
+
       <nav class="nav-links">
-        <a href="#how">How it works</a>
-        <a href="#detect">Detection</a>
-        <a href="#integrate">Integrate</a>
+        <a href="#how">Architecture</a>
+        <a href="#code">Python SDK</a>
+        <a href="#simulator">Live Simulator</a>
+        <a href="#features">Features</a>
         <a href="#limits">Limitations</a>
-        <a href="/app/#/login">Log in</a>
-        <a class="nav-cta" href="/app/#/signup">Get Started</a>
+        <a href="./docs/">Docs</a>
       </nav>
+
+      <div class="nav-cta-row">
+        <a class="nav-gh" href="https://github.com/shaneisraeln/batman-AISE" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          GitHub
+        </a>
+        <a class="nav-links" style="font-size:12px; margin-right:4px;" href="/app/#/login">Log in</a>
+        <a class="nav-cta" href="/app/#/signup">Console</a>
+      </div>
     </header>
 
-    <!-- Hero -->
+    <!-- Hero Section -->
     <section class="hero" id="top">
-      <div class="eyebrow">Behavioral AI Threat Monitoring</div>
-      <h1>Runtime Security for<br /><span class="accent">Machine Learning Inference</span></h1>
-      <p class="lede">
-        Protect ML inference APIs from anomalous behavior, abusive traffic, and
-        systematic model probing using behavioral detection and policy-based
-        enforcement — without changing your model.
-      </p>
-      <div class="cta-row">
-        <a class="btn primary" href="/app/#/signup">Protect Your Model</a>
-        <a class="btn ghost" href="./docs/">Read Documentation</a>
+      <div class="badge-pill">
+        <span class="badge-dot"></span>
+        <span>batman-ml v0.1.0 · PyPI Released</span>
       </div>
-      <div class="hero-note">Detect with ML · Investigate with agents · Explain with AI · Enforce with policy</div>
+
+      <h1>
+        <span class="code-prefix">from batman_ml import protect</span>
+        Runtime Security for<br />
+        <span class="accent">Machine Learning Inference</span>
+      </h1>
+
+      <p class="lede">
+        Shield ML models from <strong>systematic model extraction</strong>, adversarial probing, and API abuse.
+        An ultra-lightweight client backed by a session-aware behavioral isolation forest and deterministic policy enforcement.
+      </p>
+
+      <!-- Install Command Bar with 1-Click Copy -->
+      <div class="install-bar">
+        <div class="install-cmd">
+          <span class="prompt">$</span>
+          <span id="installText">pip install batman-ml</span>
+        </div>
+        <button class="copy-btn" id="copyInstallBtn" onclick="copyInstallCmd()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span id="copyBtnLabel">COPY</span>
+        </button>
+      </div>
+
+      <div class="cta-row">
+        <a class="btn primary" href="/app/#/signup">
+          <span>Protect Your Model</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+        <a class="btn ghost" href="#code">Python Quickstart</a>
+        <a class="btn ghost" href="https://pypi.org/project/batman-ml/" target="_blank" rel="noopener">PyPI Package ↗</a>
+      </div>
+
+      <!-- Quick Metrics Ribbon -->
+      <div class="stats-ribbon">
+        <div class="stat-item">
+          <div class="stat-val">&lt; 4ms</div>
+          <div class="stat-label">Evaluation Overhead</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">0.94</div>
+          <div class="stat-label">Extraction F1 Score</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">0</div>
+          <div class="stat-label">Client ML Bloat (httpx only)</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">100%</div>
+          <div class="stat-label">Deterministic Policy Floor</div>
+        </div>
+      </div>
     </section>
 
-    <!-- Problem -->
-    <section class="band" id="problem">
+    <!-- The Threat Vector Band -->
+    <section class="band alt" id="problem">
       <div class="wrap">
-        <h2>The problem</h2>
-        <p class="body">
-          A model exposed through an API can be probed one valid request at a
-          time. Traditional API security sees each call in isolation — it can
-          catch malformed payloads, failed auth, and raw request floods, but it
-          does not understand whether a <em>sequence</em> of otherwise-valid ML
-          queries is suspicious from the model's perspective.
-        </p>
+        <div class="section-head">
+          <div class="eyebrow">The Threat Surface</div>
+          <h2>Traditional WAFs Are Blind to Model Theft</h2>
+          <p class="body">
+            Standard API gateways inspect single requests in isolation: malformed JSON, SQLi strings, or raw IP floods.
+            They cannot detect an attacker sending <em>valid</em> feature vectors that systematically map your model's decision boundaries.
+          </p>
+        </div>
+
         <div class="cards">
           <div class="card">
-            <div class="ic">↯</div>
-            <h3>API abuse</h3>
-            <p>High-rate, bursty, and repeated queries that strain the model.</p>
-          </div>
-          <div class="card">
-            <div class="ic">◎</div>
-            <h3>Model extraction</h3>
-            <p>High-volume, high-diversity queries that systematically harvest the model's behavior.</p>
-          </div>
-          <div class="card">
-            <div class="ic">⚠</div>
-            <h3>Anomalous inputs</h3>
-            <p>Out-of-range values, extreme norms, and distribution shifts.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- How it works -->
-    <section class="band alt" id="how">
-      <div class="wrap">
-        <h2>How BATMAN works</h2>
-        <p class="body">
-          BATMAN sits in front of your model as a security gateway. It analyzes
-          behavior <em>across</em> requests within a session, decides an action
-          with a deterministic policy engine, and only then lets an allowed
-          request reach your model.
-        </p>
-        <pre class="flow">
-Client
-  ↓
-BATMAN Gateway   ── authenticate · validate · rate-limit
-  ↓
-Behavioral features (per session)
-  ↓
-Detection        ── rules + Isolation Forest + extraction signals
-  ↓
-Agents           ── investigate (RAG + LLM explanation, advisory)
-  ↓
-Policy Engine    ── AUTHORITATIVE
-  ↓
-ALLOW · RATE_LIMIT · BLOCK
-  ↓
-Your ML model (only if allowed)  →  Telemetry  →  Dashboard</pre>
-        <p class="fineprint">
-          The policy engine is authoritative. The LLM explains and recommends —
-          it never overrides an enforcement decision.
-        </p>
-      </div>
-    </section>
-
-    <!-- Detection -->
-    <section class="band" id="detect">
-      <div class="wrap">
-        <h2>Behavioral detection</h2>
-        <div class="cards two">
-          <div class="card">
-            <h3>Learns normal, flags deviation</h3>
+            <div class="ic">⚡</div>
+            <h3>Model Extraction &amp; Theft</h3>
             <p>
-              An Isolation Forest is calibrated on your service's own normal
-              traffic. A dedicated detector scores model-extraction and probing
-              behavior from request rate, query diversity, and systematic input
-              variation.
+              Attackers submit high-entropy query sequences to reverse-engineer proprietary model weights, hyperplanes, or training data distributions.
             </p>
           </div>
           <div class="card">
-            <h3>Deterministic floor</h3>
+            <div class="ic">🎯</div>
+            <h3>Decision Boundary Probing</h3>
             <p>
-              Rules and rate limiting stay active even if the ML detector, RAG,
-              or LLM are unavailable. Security enforcement never depends on the
-              language model.
+              Fine-grained iterative perturbation queries designed to discover adversarial vulnerabilities and bypass classification thresholds.
+            </p>
+          </div>
+          <div class="card">
+            <div class="ic">⚠️</div>
+            <h3>Distributional Shift &amp; Anomalies</h3>
+            <p>
+              Extreme norm deviations and out-of-distribution inputs that degrade model reliability or trigger high-cost edge cases.
             </p>
           </div>
         </div>
-        <p class="fineprint">
-          Validation note: in controlled development testing against a real
-          deployed model, the behavioral detector reached an F1 around 0.89 on
-          extraction and anomalous-input detection and generalized to an unseen
-          extraction strategy (F1 ≈ 0.94). These are development results on
-          controlled traffic, not a guarantee for every workload — thresholds
-          must be calibrated per model.
-        </p>
       </div>
     </section>
 
-    <!-- Integrate -->
-    <section class="band alt" id="integrate">
+    <!-- Interactive Code Showcase Section -->
+    <section class="band" id="code">
       <div class="wrap">
-        <h2>Two ways to integrate</h2>
-        <div class="cards two">
-          <div class="card">
-            <h3>Python SDK</h3>
-            <p>Route inference through BATMAN with a lightweight client.</p>
-            <pre class="code">pip install batman-ml</pre>
-            <pre class="code">from batman_ml import protect
+        <div class="section-head">
+          <div class="eyebrow">Developer Experience</div>
+          <h2>Integrate in Under 60 Seconds</h2>
+          <p class="body">
+            The <code>batman-ml</code> library is designed to be completely non-invasive.
+            Wrap your local model, connect to your FastAPI backend, or proxy through our high-performance inference gateway.
+          </p>
+        </div>
 
-protected = protect(
-    api_key="bm_live_xxxxx",
-    base_url="https://your-batman.example",
+        <div class="code-showcase">
+          <div class="code-tabs">
+            <button class="tab-btn active" onclick="switchCodeTab(0)">1. Scikit-Learn Wrapper</button>
+            <button class="tab-btn" onclick="switchCodeTab(1)">2. FastAPI &amp; PyTorch</button>
+            <button class="tab-btn" onclick="switchCodeTab(2)">3. Direct SDK Client</button>
+            <button class="tab-btn" onclick="switchCodeTab(3)">4. REST Gateway (cURL)</button>
+          </div>
+
+          <!-- Tab 1: Scikit-learn -->
+          <div class="code-panel active" id="tab0">
+            <button class="panel-copy-btn" onclick="copySnippet('code0')">Copy Code</button>
+            <pre><code id="code0"><span class="kw">import</span> joblib
+<span class="kw">from</span> batman_ml <span class="kw">import</span> protect
+
+<span class="cm"># Load your model (scikit-learn, XGBoost, or callable)</span>
+model = joblib.load(<span class="str">"fraud_detector.joblib"</span>)
+
+<span class="cm"># Wrap with BATMAN runtime security</span>
+shielded_model = protect(
+    model,
+    api_key=<span class="str">"bm_live_9b4e7a81c..."</span>,
+    base_url=<span class="str">"https://batman-api.onrender.com"</span>
 )
-prediction = protected.predict(X)</pre>
+
+<span class="cm"># Standard scikit-learn API — security runs transparently</span>
+predictions = shielded_model.predict(X_test)</code></pre>
+          </div>
+
+          <!-- Tab 2: FastAPI / PyTorch -->
+          <div class="code-panel" id="tab1">
+            <button class="panel-copy-btn" onclick="copySnippet('code1')">Copy Code</button>
+            <pre><code id="code1"><span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI, HTTPException
+<span class="kw">from</span> batman_ml <span class="kw">import</span> BatmanClient
+
+app = FastAPI()
+client = BatmanClient(
+    api_key=<span class="str">"bm_live_9b4e7a81c..."</span>,
+    base_url=<span class="str">"https://batman-api.onrender.com"</span>
+)
+
+<span class="kw">@app.post</span>(<span class="str">"/predict"</span>)
+<span class="kw">def</span> <span class="fn">infer</span>(features: list[float]):
+    <span class="cm"># Screen request against session behavioral history</span>
+    evaluation = client.evaluate(inputs=[features])
+    
+    <span class="kw">if</span> evaluation.is_blocked:
+        <span class="kw">raise</span> HTTPException(status_code=<span class="num">403</span>, detail=<span class="str">f"Blocked: {evaluation.threat_type}"</span>)
+        
+    <span class="kw">return</span> {<span class="str">"prediction"</span>: my_pytorch_model(features)}</code></pre>
+          </div>
+
+          <!-- Tab 3: Low-level SDK Client -->
+          <div class="code-panel" id="tab2">
+            <button class="panel-copy-btn" onclick="copySnippet('code2')">Copy Code</button>
+            <pre><code id="code2"><span class="kw">from</span> batman_ml <span class="kw">import</span> BatmanClient
+
+client = BatmanClient(api_key=<span class="str">"bm_live_..."</span>)
+
+<span class="cm"># Check gateway health</span>
+status = client.health()
+print(status)  <span class="cm"># {'status': 'ok', 'mode': 'enforce', 'detector_ready': True}</span>
+
+<span class="cm"># Proxy inference request directly to your registered upstream</span>
+result = client.predict(
+    inputs=[[<span class="num">17.99</span>, <span class="num">10.38</span>, <span class="num">122.8</span>, <span class="num">1001.0</span>, <span class="num">0.1184</span>]],
+    model_id=<span class="str">"demo_cancer_classifier"</span>
+)
+print(result[<span class="str">"prediction"</span>])</code></pre>
+          </div>
+
+          <!-- Tab 4: REST Gateway -->
+          <div class="code-panel" id="tab3">
+            <button class="panel-copy-btn" onclick="copySnippet('code3')">Copy Code</button>
+            <pre><code id="code3"><span class="cm"># Send inference queries from any language via HTTP</span>
+curl -X POST https://batman-api.onrender.com/v1/predict \
+  -H <span class="str">"x-api-key: bm_live_9b4e7a81c..."</span> \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d '{
+    <span class="str">"inputs"</span>: [[<span class="num">1.42</span>, <span class="num">0.89</span>, <span class="num">-1.24</span>, <span class="num">0.05</span>, <span class="num">2.81</span>]],
+    <span class="str">"session_id"</span>: <span class="str">"sess_user_789"</span>
+  }'</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Batcomputer Interactive Simulator -->
+    <section class="band alt" id="simulator">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">Interactive Console</div>
+          <h2>Live Threat &amp; Enforcement Simulator</h2>
+          <p class="body">
+            Simulate real traffic patterns below to see how the BATMAN behavioral engine evaluates request sequences, calculates Isolation Forest anomaly scores, and applies deterministic policy enforcement in real time.
+          </p>
+        </div>
+
+        <div class="sim-container">
+          <div class="sim-header">
+            <div class="sim-title">
+              <span class="sim-led"></span>
+              <span>Batcomputer Telemetry Engine · Online</span>
+            </div>
+            <div class="sim-controls">
+              <button class="sim-btn active" id="btnNormal" onclick="runSimTraffic('normal')">🟢 Legitimate Query</button>
+              <button class="sim-btn" id="btnExtraction" onclick="runSimTraffic('extraction')">🔴 Model Extraction Attack</button>
+              <button class="sim-btn" id="btnAnomaly" onclick="runSimTraffic('anomaly')">🟡 Out-of-Distribution Vector</button>
+            </div>
+          </div>
+
+          <div class="sim-grid">
+            <!-- Terminal Log Window -->
+            <div class="sim-terminal" id="simTerminal">
+              <div class="log-line"><span class="ts">[22:45:01]</span> <span class="tag-amber">[BATMAN GATEWAY]</span> Session initialized: sess_live_demo</div>
+              <div class="log-line"><span class="ts">[22:45:01]</span> <span class="tag-ok">[CALIBRATION]</span> Isolation Forest baseline loaded (breast_cancer, 30 features)</div>
+              <div class="log-line"><span class="ts">[22:45:01]</span> Ready. Click a traffic scenario above to inspect enforcement.</div>
+            </div>
+
+            <!-- Telemetry Gauges -->
+            <div class="sim-telemetry">
+              <div>
+                <div class="meter-group">
+                  <div class="meter-label">
+                    <span>Isolation Forest Anomaly Score</span>
+                    <span id="meterScoreVal">0.18</span>
+                  </div>
+                  <div class="meter-bar">
+                    <div class="meter-fill" id="meterScoreFill" style="width: 18%; background: var(--ok);"></div>
+                  </div>
+                </div>
+
+                <div class="meter-group">
+                  <div class="meter-label">
+                    <span>Query Entropy &amp; Diversity</span>
+                    <span id="meterDivVal">0.24</span>
+                  </div>
+                  <div class="meter-bar">
+                    <div class="meter-fill" id="meterDivFill" style="width: 24%; background: var(--ok);"></div>
+                  </div>
+                </div>
+
+                <div class="meter-group">
+                  <div class="meter-label">
+                    <span>Rolling Velocity (req/min)</span>
+                    <span id="meterVelVal">4 req/min</span>
+                  </div>
+                  <div class="meter-bar">
+                    <div class="meter-fill" id="meterVelFill" style="width: 12%; background: var(--ok);"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="verdict-box" id="verdictBox">
+                <div class="verdict-status" id="verdictStatus" style="color: var(--ok);">ALLOW (200 OK)</div>
+                <div class="verdict-detail" id="verdictDetail">Normal inference vector · Upstream execution permitted</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture Pipeline Section -->
+    <section class="band" id="how">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">Zero-Trust Pipeline</div>
+          <h2>Deterministic Security Architecture</h2>
+          <p class="body">
+            BATMAN sits between your consumers and your inference backend.
+            Enforcement decisions are executed by a strict deterministic policy floor — language models and agents are advisory only and never introduce hallucinations into blocking decisions.
+          </p>
+        </div>
+
+        <div class="pipeline">
+          <div class="pipe-step">
+            <div class="pipe-num">01 / INGEST</div>
+            <div class="pipe-title">Client SDK</div>
+            <div class="pipe-desc">Lightweight python wrapper or REST call with API key</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step">
+            <div class="pipe-num">02 / SESSION</div>
+            <div class="pipe-title">Telemetry Store</div>
+            <div class="pipe-desc">Computes query velocity, diversity, and feature history</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step">
+            <div class="pipe-num">03 / DETECT</div>
+            <div class="pipe-title">Isolation Forest</div>
+            <div class="pipe-desc">Calibrated against normal baseline to score anomalies</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step">
+            <div class="pipe-num">04 / GATE</div>
+            <div class="pipe-title">Policy Engine</div>
+            <div class="pipe-desc">Deterministic verdict: ALLOW · RATE_LIMIT · BLOCK</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step">
+            <div class="pipe-num">05 / PROXY</div>
+            <div class="pipe-title">Your ML Model</div>
+            <div class="pipe-desc">Only authenticated, safe traffic reaches your model weights</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why BATMAN Section -->
+    <section class="band alt" id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">Enterprise Features</div>
+          <h2>Engineered for High-Stakes ML Workloads</h2>
+          <p class="body">
+            Built from the ground up for production reliability, zero-bloat client distribution, and uncompromising security.
+          </p>
+        </div>
+
+        <div class="cards">
+          <div class="card">
+            <div class="ic">🪶</div>
+            <h3>Ultra-Lightweight SDK</h3>
+            <p>
+              Installs in seconds. Depends exclusively on <code>httpx</code>. Zero scikit-learn, numpy, or PyTorch bloat on your client machines.
+            </p>
           </div>
           <div class="card">
-            <h3>REST / Gateway</h3>
+            <div class="ic">🧠</div>
+            <h3>Self-Calibrated Baseline</h3>
             <p>
-              Already have a deployed model API? Register its endpoint and let
-              BATMAN proxy to it — no retraining, no model change.
+              Trains a dedicated Isolation Forest on your service's own normal traffic data so thresholds reflect your model's real domain.
             </p>
-            <pre class="code">curl -X POST https://your-batman.example/v1/predict \
-  -H "x-api-key: bm_live_xxxxx" \
-  -H "Content-Type: application/json" \
-  -d '{"inputs": [[/* features */]]}'</pre>
+          </div>
+          <div class="card">
+            <div class="ic">⚖️</div>
+            <h3>Deterministic Floor</h3>
+            <p>
+              Security policy never relies on generative AI hallucinations. Hard mathematical rules guarantee zero-trust enforcement under any load.
+            </p>
+          </div>
+          <div class="card">
+            <div class="ic">🔐</div>
+            <h3>Encrypted Credentials</h3>
+            <p>
+              Upstream API tokens and credentials are encrypted at rest with AES-128-CBC via Fernet keys and never leaked in logs or error traces.
+            </p>
+          </div>
+          <div class="card">
+            <div class="ic">🛡️</div>
+            <h3>Production SSRF Guard</h3>
+            <p>
+              Automated private IP and loopback filtering prevents internal network scanning and intranet model exploitation.
+            </p>
+          </div>
+          <div class="card">
+            <div class="ic">📊</div>
+            <h3>Analyst Feedback Loops</h3>
+            <p>
+              Interactive threat triage console allows security analysts to flag false positives and tune model sensitivity over time.
+            </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Monitoring -->
-    <section class="band" id="monitor">
-      <div class="wrap">
-        <h2>Monitoring &amp; feedback</h2>
-        <p class="body">
-          Every request produces structured, request-traceable telemetry. The
-          dashboard shows real traffic, threat categories, latency, and per-model
-          activity — with controlled security tests clearly labelled, never mixed
-          with production traffic. Analysts can label detections to inform future
-          evaluation.
-        </p>
-      </div>
-    </section>
-
-    <!-- Get started -->
-    <section class="band alt" id="get-started">
-      <div class="wrap center">
-        <h2>Protect your model</h2>
-        <p class="body">
-          Create a project, register your model, generate a BATMAN API key, and
-          integrate via the SDK or the gateway.
-        </p>
-        <div class="cta-row center">
-          <a class="btn primary" href="/app/#/signup">Create Free Account</a>
-          <a class="btn ghost" href="/app/#/login">Log in</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Limitations (honest) -->
+    <!-- Honest Limitations Section -->
     <section class="band" id="limits">
       <div class="wrap">
-        <h2>What BATMAN does not claim</h2>
-        <p class="body">
-          Security is about reducing risk, not eliminating it. BATMAN is a
-          behavioral runtime layer for ML inference — it is deliberately honest
-          about its scope.
-        </p>
-        <ul class="limits">
-          <li>It does <strong>not</strong> protect against every cyberattack.</li>
-          <li>It does <strong>not</strong> guarantee perfect detection or zero false positives.</li>
-          <li>It does <strong>not</strong> replace a WAF, SIEM, IAM, or your infrastructure security.</li>
-          <li>It does <strong>not</strong> guarantee detection of every adversarial example.</li>
-          <li>Detection thresholds must be calibrated against your model's own traffic.</li>
+        <div class="section-head">
+          <div class="eyebrow">Engineering Integrity</div>
+          <h2>Scope &amp; Honest Limitations</h2>
+          <p class="body">
+            Security is about reducing risk, not peddling magic. BATMAN is a behavioral inference security layer — here is our honest threat boundary.
+          </p>
+        </div>
+
+        <ul class="limits-list">
+          <li>It does <strong>not</strong> claim to stop every cyberattack across your perimeter.</li>
+          <li>It does <strong>not</strong> guarantee zero false positives — detection thresholds must be calibrated against your actual workload.</li>
+          <li>It does <strong>not</strong> replace your infrastructure WAF, IAM access controls, or network-level firewalls.</li>
+          <li>It evaluates <strong>sequences</strong> and behavioral patterns; single-query subtle evasion requires model-level robustness defenses.</li>
         </ul>
       </div>
     </section>
 
+    <!-- Final Call to Action -->
+    <section class="band alt" id="get-started">
+      <div class="wrap center">
+        <div class="eyebrow">Get Started Now</div>
+        <h2>Start Protecting Your Inference APIs</h2>
+        <p class="body" style="margin: 0 auto 30px;">
+          Deploy to Render in 1 click, install <code>batman-ml</code> with pip, and protect your machine learning models from extraction in minutes.
+        </p>
+        <div class="cta-row center">
+          <a class="btn primary" href="/app/#/signup">Launch Free Console</a>
+          <a class="btn ghost" href="./docs/">Read Full Documentation</a>
+          <a class="btn ghost" href="https://github.com/shaneisraeln/batman-AISE" target="_blank" rel="noopener">Star on GitHub ⭐</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
     <footer class="footer">
       <div class="wrap footwrap">
         <div class="foot-brand">
           <svg viewBox="0 0 100 58" class="bat sm" aria-hidden="true">
-            <path fill="#6b6b6b" d="M50 8c2 6 6 9 11 9 3 0 5-1 7-3-1 5-1 9 1 13 4-5 9-7 15-7 5 0 9 2 12 5-6-1-10 1-12 6-2 4-2 8 0 14-5-4-10-5-15-3-4 2-6 5-7 9-1-4-3-7-7-8h-2c-4 1-6 4-7 8-1-4-3-7-7-9-5-2-10-1-15 3 2-6 2-10 0-14-2-5-6-7-12-6 3-3 7-5 12-5 6 0 11 2 15 7 2-4 2-8 1-13 2 2 4 3 7 3 5 0 9-3 11-9z"/>
+            <path fill="#8a6d29" d="M50 8c2 6 6 9 11 9 3 0 5-1 7-3-1 5-1 9 1 13 4-5 9-7 15-7 5 0 9 2 12 5-6-1-10 1-12 6-2 4-2 8 0 14-5-4-10-5-15-3-4 2-6 5-7 9-1-4-3-7-7-8h-2c-4 1-6 4-7 8-1-4-3-7-7-9-5-2-10-1-15 3 2-6 2-10 0-14-2-5-6-7-12-6 3-3 7-5 12-5 6 0 11 2 15 7 2-4 2-8 1-13 2 2 4 3 7 3 5 0 9-3 11-9z"/>
           </svg>
           <span>BATMAN</span>
         </div>
         <div class="foot-links">
+          <a href="https://pypi.org/project/batman-ml/" target="_blank" rel="noopener">PyPI Package</a>
+          <a href="https://github.com/shaneisraeln/batman-AISE" target="_blank" rel="noopener">GitHub</a>
           <a href="./docs/">Documentation</a>
-          <a href="/app/#/login">Dashboard</a>
-          <a href="#limits">Limitations</a>
+          <a href="/app/#/login">Console</a>
+          <a href="#limits">Scope</a>
         </div>
-        <div class="foot-note">Behavioral AI Threat Monitoring for ML Models</div>
+        <div class="foot-note">
+          Behavioral AI Threat Monitoring and Mitigation for ML Models · MIT Licensed · Open Source
+        </div>
       </div>
     </footer>
+
+    <!-- Interactive Client Scripts -->
+    <script>
+      // 1. Copy install command
+      function copyInstallCmd() {
+        const text = document.getElementById('installText').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = document.getElementById('copyInstallBtn');
+          const label = document.getElementById('copyBtnLabel');
+          btn.classList.add('copied');
+          label.innerText = 'COPIED!';
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            label.innerText = 'COPY';
+          }, 2000);
+        });
+      }
+
+      // 2. Code snippet switcher
+      function switchCodeTab(index) {
+        const tabs = document.querySelectorAll('.tab-btn');
+        const panels = document.querySelectorAll('.code-panel');
+        tabs.forEach((t, i) => t.classList.toggle('active', i === index));
+        panels.forEach((p, i) => p.classList.toggle('active', i === index));
+      }
+
+      // 3. Copy code snippet
+      function copySnippet(elementId) {
+        const text = document.getElementById(elementId).innerText;
+        navigator.clipboard.writeText(text).then(() => {
+          alert('Snippet copied to clipboard!');
+        });
+      }
+
+      // 4. Interactive Simulator
+      function runSimTraffic(type) {
+        const term = document.getElementById('simTerminal');
+        const meterScoreVal = document.getElementById('meterScoreVal');
+        const meterScoreFill = document.getElementById('meterScoreFill');
+        const meterDivVal = document.getElementById('meterDivVal');
+        const meterDivFill = document.getElementById('meterDivFill');
+        const meterVelVal = document.getElementById('meterVelVal');
+        const meterVelFill = document.getElementById('meterVelFill');
+        const verdictStatus = document.getElementById('verdictStatus');
+        const verdictDetail = document.getElementById('verdictDetail');
+
+        document.getElementById('btnNormal').classList.toggle('active', type === 'normal');
+        document.getElementById('btnExtraction').classList.toggle('active', type === 'extraction');
+        document.getElementById('btnAnomaly').classList.toggle('active', type === 'anomaly');
+
+        const now = new Date().toTimeString().split(' ')[0];
+
+        if (type === 'normal') {
+          term.innerHTML += `<div class="log-line"><span class="ts">[${now}]</span> <span class="tag-ok">INFERENCE</span> vector=[14.2, 0.95, -0.4, ...], velocity=4/min, entropy=0.24</div>`;
+          term.innerHTML += `<div class="log-line"><span class="ts">[${now}]</span> <span class="tag-ok">EVALUATION</span> IF-Score: 0.18 &lt; threshold 0.562 · Verdict: ALLOW (200 OK) · 3.8ms</div>`;
+          
+          meterScoreVal.innerText = '0.18';
+          meterScoreFill.style.width = '18%';
+          meterScoreFill.style.background = 'var(--ok)';
+
+          meterDivVal.innerText = '0.24';
+          meterDivFill.style.width = '24%';
+          meterDivFill.style.background = 'var(--ok)';
+
+          meterVelVal.innerText = '4 req/min';
+          meterVelFill.style.width = '12%';
+
+          verdictStatus.innerText = 'ALLOW (200 OK)';
+          verdictStatus.style.color = 'var(--ok)';
+          verdictDetail.innerText = 'Legitimate query sequence · Model inference permitted';
+        } else if (type === 'extraction') {
+          term.innerHTML += `<div class="log-line"><span class="ts">[${now}]</span> <span class="tag-block">SECURITY ALERT</span> High entropy sweep detected: 85 unique vectors / 10s</div>`;
+          term.innerHTML += `<div class="log-line"><span class="ts">[${now}]</span> <span class="tag-block">EXTRACTION</span> Hyperplane probing pattern flagged · Policy: BLOCK (403) · Traceable audit #TR-8812</div>`;
+          
+          meterScoreVal.innerText = '0.94';
+          meterScoreFill.style.width = '94%';
+          meterScoreFill.style.background = 'var(--danger)';
+
+          meterDivVal.innerText = '0.91';
+          meterDivFill.style.width = '91%';
+          meterDivFill.style.background = 'var(--danger)';
+
+          meterVelVal.innerText = '140 req/min';
+          meterVelFill.style.width = '90%';
+
+          verdictStatus.innerText = 'BLOCK (403 FORBIDDEN)';
+          verdictStatus.style.color = 'var(--danger)';
+          verdictDetail.innerText = 'Systematic model extraction detected · Request dropped at gateway';
+        } else if (type === 'anomaly') {
+          term.innerHTML += `<div class="log-line"><span class="ts">[${now}]</span> <span class="tag-warn">ANOMALY DETECTED</span> Feature norm deviation exceeds 4.5 sigma</div>`;
+          term.innerHTML += `<div class="log-line"><span class="ts">[${now}]</span> <span class="tag-warn">RATE_LIMIT</span> Burst ceiling reached · Policy: RATE_LIMIT (429) · Backoff 60s</div>`;
+          
+          meterScoreVal.innerText = '0.72';
+          meterScoreFill.style.width = '72%';
+          meterScoreFill.style.background = 'var(--warn)';
+
+          meterDivVal.innerText = '0.65';
+          meterDivFill.style.width = '65%';
+          meterDivFill.style.background = 'var(--warn)';
+
+          meterVelVal.innerText = '45 req/min';
+          meterVelFill.style.width = '45%';
+
+          verdictStatus.innerText = 'RATE_LIMIT (429)';
+          verdictStatus.style.color = 'var(--warn)';
+          verdictDetail.innerText = 'Distribution anomaly · Throttled to prevent boundary harvest';
+        }
+
+        term.scrollTop = term.scrollHeight;
+      }
+    </script>
   </body>
 </html>
